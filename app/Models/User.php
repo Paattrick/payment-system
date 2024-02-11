@@ -36,6 +36,7 @@ class User extends Authenticatable
         'barangay',
         'id_number',
         'password',
+        'status'
     ];
 
     /**

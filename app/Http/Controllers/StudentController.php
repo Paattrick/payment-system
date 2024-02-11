@@ -23,8 +23,10 @@ class StudentController extends Controller
 
         $students = User::query()
             ->whereHas('roles', fn ($query) => $query->where('name', 'student'))
+            ->when($request->filled('name'), fn ($query) => $query->where('name', 'LIKE', "%{$request->name}%")->orWhere('last_name', 'LIKE', "%{$request->name}%"))
             ->when($request->filled('grade'), fn ($query) => $query->where('grade', $request->grade))
             ->when($request->filled('section'), fn ($query) => $query->where('section', $request->section))
+            ->where('status', 'active')
             ->latest()
             ->paginate($request->per_page);
 
@@ -61,8 +63,8 @@ class StudentController extends Controller
                 'municipality' => 'required|string',
                 'barangay' => 'required|string',
                 'id_number' => 'required|string',
-                'password' => Rule::requiredIf(fn () => $request->isMethod('post')) . '|max:255|same:confirmation',
-                'confirmation' => Rule::requiredIf(fn () => $request->isMethod('post')) . '|same:password',
+                'password' => 'nullable|max:255|same:confirmation',
+                'confirmation' => 'nullable|same:password',
             ],
             [
                 'password.same' => 'Password does not match.',
@@ -77,7 +79,7 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateRequest($request);
-        $encrypted_password = Hash::make($validated['password']);
+        $encrypted_password = Hash::make($validated['id_number']);
 
         User::create(
             [
@@ -135,9 +137,30 @@ class StudentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, User $student)
     {
-        //
+    }
+
+    public function archive(Request $request, User $student)
+    {
+        $student->update([
+            'status' => "archived"
+        ]);
+
+        $student->save();
+
+        return redirect()->back();
+    }
+
+    public function archiveRestore(Request $request, User $student)
+    {
+        $student->update([
+            'status' => "active"
+        ]);
+
+        $student->save();
+
+        return redirect()->back();
     }
 
     public function filterStudent()

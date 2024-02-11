@@ -130,6 +130,10 @@ const handleDelete = (val) => {
         icon: h(ExclamationCircleFilled),
         content: "archived students can be accessed in Archives.",
         okText: "OK",
+        onOk() {
+            router.put(route("student.archive", val.id));
+            message.success("Successfully Sent to Archives!");
+        },
         cancelText: "Cancel",
     });
 };
@@ -363,7 +367,7 @@ const handleRedirectBack = () => {
                                 :message="form.errors.id_number"
                             />
                         </a-form-item>
-                        <a-form-item required label="Password">
+                        <a-form-item v-if="isEditing" required label="Password">
                             <a-input
                                 type="password"
                                 v-model:value="form.password"
@@ -374,7 +378,11 @@ const handleRedirectBack = () => {
                                 :message="form.errors.password"
                             />
                         </a-form-item>
-                        <a-form-item required label="Confirm Password">
+                        <a-form-item
+                            v-if="isEditing"
+                            required
+                            label="Confirm Password"
+                        >
                             <a-input
                                 type="password"
                                 v-model:value="form.confirmation"

@@ -7,8 +7,8 @@ import {
     ExclamationCircleFilled,
     RestFilled,
 } from "@ant-design/icons-vue";
-import { useForm } from "@inertiajs/vue3";
-import { Modal } from "ant-design-vue";
+import { useForm, router } from "@inertiajs/vue3";
+import { Modal, message } from "ant-design-vue";
 import { h, ref } from "vue";
 const [modal] = Modal.useModal();
 
@@ -90,8 +90,6 @@ const addField = () => {
     });
     clearance.value = null;
     amount.value = 0;
-
-    console.log(form.meta);
 };
 
 const removeField = (index) => {
@@ -118,7 +116,7 @@ const submit = () => {
 };
 
 const update = () => {
-    form.put(route("employees.update", form.id), {
+    form.put(route("fees.update", form.id), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
@@ -129,10 +127,13 @@ const update = () => {
 
 const handleDelete = (val) => {
     Modal.confirm({
-        title: "Are you sure to move this to archive?",
+        title: "Are you sure to delete this Payment?",
         icon: h(ExclamationCircleFilled),
-        content: "archived students can be accessed in Archives.",
         okText: "OK",
+        onOk() {
+            router.delete(route("fees.destroy", val.id));
+            message.success("Successfully Deleted!");
+        },
         cancelText: "Cancel",
     });
 };
@@ -196,11 +197,11 @@ const handleDelete = (val) => {
                 :width="600"
             >
                 <a-form :model="form" name="basic" layout="vertical">
-                    <a-form-item required label="Name" name="name">
+                    <a-form-item required label="Purpose of this Fee">
                         <a-input v-model:value="form.name" />
                         <InputError class="mt-2" :message="form.errors.name" />
                     </a-form-item>
-                    <a-form-item required label="Clearance">
+                    <a-form-item required label="Specific">
                         <a-input v-model:value="clearance" />
                     </a-form-item>
                     <a-form-item required label="Amount">
@@ -209,7 +210,7 @@ const handleDelete = (val) => {
                     <a-button class="mb-4" type="primary" @click="addField"
                         >Add Description</a-button
                     >
-                    <div>
+                    <div v-if="form.meta.length > 0">
                         <a-table
                             :columns="descriptionColumns"
                             :dataSource="form.meta"
@@ -224,7 +225,12 @@ const handleDelete = (val) => {
                                     {{ record.clearance }}
                                 </template>
                                 <template v-if="column.dataIndex === 'amount'">
-                                    {{ record.amount }}
+                                    {{
+                                        new Intl.NumberFormat("PHP", {
+                                            style: "currency",
+                                            currency: "PHP",
+                                        }).format(record.amount)
+                                    }}
                                 </template>
                                 <template v-if="column.dataIndex === 'actions'">
                                     <a-button @click="removeField(index)">

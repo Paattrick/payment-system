@@ -91,8 +91,6 @@ const addField = () => {
     });
     clearance.value = null;
     amount.value = 0;
-
-    console.log(form.meta);
 };
 
 const removeField = (index) => {

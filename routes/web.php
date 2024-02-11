@@ -5,8 +5,10 @@ use App\Http\Controllers\FeesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserStudentController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\ArchiveController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 /*
@@ -21,12 +23,13 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    // return Inertia::render('Welcome', [
+    //     'canLogin' => Route::has('login'),
+    //     'canRegister' => Route::has('register'),
+    //     'laravelVersion' => Application::VERSION,
+    //     'phpVersion' => PHP_VERSION,
+    // ]);
+    return Redirect::route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -42,6 +45,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('/students', StudentController::class);
         Route::resource('/employees', EmployeeController::class);
         Route::resource('/fees', FeesController::class);
+        Route::resource('/archives', ArchiveController::class);
+
+        Route::put('/students/{student}/archive', [StudentController::class, 'archive'])->name('student.archive');
+        Route::put('/students/{student}/archive-restore', [StudentController::class, 'archiveRestore'])->name('student.archive-restore');
 
         Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
     });

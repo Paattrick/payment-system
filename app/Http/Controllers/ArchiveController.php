@@ -4,27 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Fee;
-use App\Http\Resources\FeeResource;
+use App\Models\User;
+use App\Http\Resources\ArchiveResource;
 
-class FeesController extends Controller
+class ArchiveController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+
         $request->merge([
             'per_page' => $request->per_page ?: '15',
         ]);
 
-        $fees = Fee::query()
-            ->whereNotNull('name')
+        $students = User::query()
+            ->whereHas('roles', fn ($query) => $query->where('name', 'student'))
+            // ->when($request->filled('name'), fn ($query) => $query->where('name', 'LIKE', "%{$request->name}%")->orWhere('last_name', 'LIKE', "%{$request->name}%"))
+            // ->when($request->filled('grade'), fn ($query) => $query->where('grade', $request->grade))
+            // ->when($request->filled('section'), fn ($query) => $query->where('section', $request->section))
+            ->where('status', 'archived')
             ->latest()
             ->paginate($request->per_page);
 
-        return Inertia::render('Admin/Fees/Index', [
-            'fees' => FeeResource::collection($fees)
+        return Inertia::render('Admin/Archives/Index', [
+            'archives' => ArchiveResource::collection($students)
         ]);
     }
 
@@ -41,16 +46,7 @@ class FeesController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|unique:fees,name'
-        ]);
-
-        Fee::create([
-            'name' => $validated['name'],
-            'meta' => $request->meta
-        ]);
-
-        return redirect()->back();
+        //
     }
 
     /**
@@ -72,25 +68,16 @@ class FeesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Fee $fee)
+    public function update(Request $request, string $id)
     {
-        $fee->update([
-            'name' => $request->name,
-            'meta' => $request->meta
-        ]);
-
-        $fee->save();
-
-        return redirect()->back();
+        //
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Fee $fee)
+    public function destroy(string $id)
     {
-        $fee->delete();
-
-        return redirect()->back();
+        //
     }
 }

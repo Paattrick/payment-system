@@ -8,12 +8,14 @@ const { sections, strands, grades } = composables();
 
 const grade = ref(null);
 const section = ref(null);
+const name = ref(null);
 
 const submit = () => {
     router.visit(
         route("students.index", {
             grade: grade.value,
             section: section.value,
+            name: name.value,
         })
     );
 };
@@ -21,14 +23,20 @@ const submit = () => {
 <template>
     <AuthenticatedLayout>
         <div class="max-w-7xl mx-auto">
-            <div>Students Filtering</div>
+            <div class="mb-5">Students Filtering</div>
             <div>
                 <a-card class="bg-gray-200">
-                    <a-form-item label="Search Student" layout="vertical">
-                        <a-input-search />
-                    </a-form-item>
                     <a-form layout="vertical">
                         <div>
+                            <a-form-item
+                                label="Search Student"
+                                layout="vertical"
+                            >
+                                <a-input-search
+                                    v-model:value="name"
+                                    @search="submit"
+                                />
+                            </a-form-item>
                             <a-form-item label="Grade">
                                 <a-select
                                     v-model:value="grade"

@@ -91,11 +91,11 @@ const page = usePage();
                                         page.props.auth.role.is_admin ||
                                         page.props.auth.role.is_employee
                                     "
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
+                                    :href="route('archives.index')"
+                                    :active="route().current('archives.index')"
                                     class="text-white"
                                 >
-                                    Archived
+                                    Archives
                                 </NavLink>
                             </div>
                         </div>
@@ -235,7 +235,7 @@ const page = usePage();
 
             <!-- Page Heading -->
             <header class="bg-white py-8 height-md:mb-32 flex-1 relative">
-                <div class="py-8 height-md:mb-32 mx-7">
+                <div class="py-8 height-md:mb-32 max-w-7xl mx-auto">
                     <slot />
                 </div>
             </header>
