@@ -1,0 +1,33 @@
+/* @tailwind base; */
+@tailwind components;
+@tailwind utilities;
+
+.ant-table-thead .ant-table-cell{
+    background-color:gray !important;
+}
+
+.ant-modal-content {
+    padding: 0 !important;
+}
+
+.ant-modal-header {
+    background-color: #e11d48 !important;
+    padding: 18px 24px !important;
+}
+
+.ant-modal-title {
+    color: white !important;
+}
+
+.ant-modal-close-x {
+    color: white !important;
+}
+
+.ant-modal-body {
+    padding: 18px 24px !important;
+}
+
+.ant-modal-footer {
+    padding: 18px 24px !important;
+}
+
