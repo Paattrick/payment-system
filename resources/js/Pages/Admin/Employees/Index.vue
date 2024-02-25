@@ -3,6 +3,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import InputError from "@/Components/InputError.vue";
 import { ref, h } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
+import TableComponent from "@/Components/Table.vue";
 import {
     RestFilled,
     EditFilled,
@@ -11,6 +12,7 @@ import {
 import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
 import { Modal } from "ant-design-vue";
+import { watchDebounced } from "@vueuse/core";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -70,6 +72,34 @@ const columns = ref([
 
 const showModal = ref(false);
 const isEditing = ref(false);
+const loading = ref(false);
+const search = ref(null);
+
+watchDebounced(
+    [search],
+    (data) => {
+        router.get(
+            window.location.pathname,
+            {
+                search: search.value,
+            },
+            {
+                preserveScroll: true,
+                replace: true,
+                preserveState: true,
+                onStart: () => {
+                    loading.value = true;
+                },
+                onFinish: () => {
+                    loading.value = false;
+                },
+            }
+        );
+    },
+    {
+        debounce: 300,
+    }
+);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -123,21 +153,55 @@ const handleDelete = (val) => {
         cancelText: "Cancel",
     });
 };
+
+const refresh = () => {
+    router.reload({
+        onStart: () => {
+            loading.value = true;
+        },
+        onFinish: () => {
+            loading.value = false;
+        },
+    });
+};
 </script>
 <template>
     <AuthenticatedLayout>
         <div>
-            <div class="mb-4 flex space-x-4">
-                <a-button type="primary" @click="handleAdd">
-                    Add Employee
-                </a-button>
-            </div>
+            <div class="page-title height-md:mb-30">Collectors</div>
+
             <div>
-                <a-table :dataSource="props.employees.data" :columns="columns">
-                    <template #bodyCell="{ column, record, text }">
-                        <template v-if="column.dataIndex === 'actions'">
+                <TableComponent
+                    :dataSource="props.employees.data"
+                    :columns="columns"
+                    :isLoading="loading"
+                    :paginationData="props.employees.meta"
+                >
+                    <template #actionButtons>
+                        <div class="flex justify-between">
                             <div class="flex space-x-4">
-                                <div @click="handleEdit(record)">
+                                <div class="w-auto">
+                                    <a-input-search
+                                        v-model:value="search"
+                                        placeholder="Search Collector"
+                                        allowClear
+                                    />
+                                </div>
+                                <a-button @click="refresh()">Refresh</a-button>
+                            </div>
+                            <div class="justify-end">
+                                <a-button type="primary" @click="handleAdd">
+                                    Add Collector
+                                </a-button>
+                            </div>
+                        </div>
+                    </template>
+                    <template #customColumn="slotProps">
+                        <template
+                            v-if="slotProps.column.dataIndex === 'actions'"
+                        >
+                            <div class="flex space-x-4">
+                                <div @click="handleEdit(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
                                             <span>Edit</span>
@@ -145,7 +209,7 @@ const handleDelete = (val) => {
                                         <a-button><EditFilled /></a-button>
                                     </a-tooltip>
                                 </div>
-                                <div @click="handleDelete(record)">
+                                <div @click="handleDelete(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
                                             <span>Archive</span>
@@ -156,7 +220,7 @@ const handleDelete = (val) => {
                             </div>
                         </template>
                     </template>
-                </a-table>
+                </TableComponent>
             </div>
             <a-modal
                 v-model:open="showModal"

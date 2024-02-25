@@ -1,29 +1,24 @@
 <script setup>
-import InputError from "@/Components/InputError.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import {
-    DeleteFilled,
-    EditFilled,
-    ExclamationCircleFilled,
-    RestFilled,
-    ShoppingCartOutlined,
-} from "@ant-design/icons-vue";
-import { useForm } from "@inertiajs/vue3";
-import { Modal } from "ant-design-vue";
-import { h, ref } from "vue";
+import { router, useForm, usePage } from "@inertiajs/vue3";
+import { Modal, message } from "ant-design-vue";
+import { onMounted, ref } from "vue";
+import TableComponent from "@/Components/Table.vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
     fees: Object,
 });
 
-const form = useForm({
-    name: null,
-    meta: [],
-});
+const form = useForm({});
+const page = usePage();
 
-const clearance = ref("");
-const amount = ref(0);
+const isDisable = ref(false);
+const totalToPay = ref(0);
+
+onMounted(() => {
+    form.value = { ...props.fees.data };
+});
 
 const columns = ref([
     {
@@ -63,15 +58,16 @@ const descriptionColumns = ref([
         align: "center",
     },
     {
-        title: "Actions",
+        title: "Amount To Pay",
         dataIndex: "actions",
         key: "actions",
-        width: 8,
+        align: "center",
     },
 ]);
 
 const showModal = ref(false);
 const isEditing = ref(false);
+const loading = ref(false);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -107,13 +103,12 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    form.post(route("fees.store"), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            showModal.value = false;
-        },
-    });
+    router.post(
+        route("billings-submit.store", {
+            fees: form.value,
+            student: page.props.auth.user,
+        })
+    );
 };
 
 const update = () => {
@@ -126,47 +121,85 @@ const update = () => {
     });
 };
 
-const handlePay = (val) => {
-    Modal.confirm({
-        title: "Payment",
-        icon: h(ExclamationCircleFilled),
-        content: "Are you sure to continue to pay this billable?",
-        okText: "OK",
-        cancelText: "Cancel",
+const handlePay = (event, index) => {
+    totalToPay.value = 0;
+    if (Number(event) > Number(form.meta[index].amount)) {
+        message.error("Amount to Pay must not exceed the exact amount");
+        isDisable.value = true;
+    } else {
+        form.meta[index].balance =
+            Number(form.meta[index].amount) - Number(event);
+        isDisable.value = false;
+    }
+};
+
+const refresh = () => {
+    router.reload({
+        onStart: () => {
+            loading.value = true;
+        },
+        onFinish: () => {
+            loading.value = false;
+        },
     });
 };
 </script>
 <template>
     <AuthenticatedLayout>
         <div>
-            <div class="mb-4 flex space-x-4">
-                <a-button type="primary" @click="handleAdd"> Add Fee </a-button>
-            </div>
+            <div class="page-title height-md:mb-30">Billings</div>
             <div>
-                <a-table :columns="columns" :dataSource="props.fees.data">
-                    <template #bodyCell="{ column, record, text, index }">
-                        <template v-if="column.dataIndex === 'meta'">
-                            <div v-for="(val, i) in record.meta" :key="i">
-                                <div class="mb-2">
-                                    {{ i + 1 }}. {{ val.clearance }}
-                                </div>
-                            </div>
-                        </template>
-                        <template v-if="column.dataIndex === 'amount'">
-                            <div v-for="(val, i) in record.meta" :key="i">
-                                <div class="mb-2">
-                                    {{
-                                        new Intl.NumberFormat("PHP", {
-                                            style: "currency",
-                                            currency: "PHP",
-                                        }).format(val.amount)
-                                    }}
-                                </div>
-                            </div>
-                        </template>
-                        <template v-if="column.dataIndex === 'actions'">
+                <TableComponent
+                    :dataSource="props.fees.data"
+                    :columns="columns"
+                    :isLoading="loading"
+                >
+                    <template #actionButtons>
+                        <div class="flex justify-between">
                             <div class="flex space-x-4">
-                                <div @click="handleEdit(record)">
+                                <a-button @click="refresh()">Refresh</a-button>
+                            </div>
+                        </div>
+                    </template>
+                    <template #customColumn="slotProps">
+                        <template v-if="slotProps.column.dataIndex === 'meta'">
+                            <div
+                                v-for="(val, i) in slotProps.record.meta"
+                                :key="i"
+                            >
+                                <div class="mb-2">
+                                    <ul class="list-disc">
+                                        <li>{{ val.clearance }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                        <template
+                            v-if="slotProps.column.dataIndex === 'amount'"
+                        >
+                            <div
+                                v-for="(val, i) in slotProps.record.meta"
+                                :key="i"
+                            >
+                                <div class="mb-2">
+                                    <ul class="list-disc">
+                                        <li>
+                                            {{
+                                                new Intl.NumberFormat("PHP", {
+                                                    style: "currency",
+                                                    currency: "PHP",
+                                                }).format(val.amount)
+                                            }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                        <template
+                            v-if="slotProps.column.dataIndex === 'actions'"
+                        >
+                            <div class="flex space-x-4">
+                                <div @click="handleEdit(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
                                             <span>Pay Bill</span>
@@ -177,7 +210,7 @@ const handlePay = (val) => {
                             </div>
                         </template>
                     </template>
-                </a-table>
+                </TableComponent>
             </div>
             <a-modal
                 v-model:open="showModal"
@@ -207,19 +240,30 @@ const handlePay = (val) => {
                                 }}
                             </template>
                             <template v-if="column.dataIndex === 'actions'">
-                                <a-tooltip placement="topLeft">
-                                    <template #title>
-                                        <span>Add this to cart</span>
-                                    </template>
-                                    <a-button @click="handlePay(index)">
-                                        <ShoppingCartOutlined />
-                                    </a-button>
-                                </a-tooltip>
+                                <a-input-number
+                                    placeholder="0.00"
+                                    :step="0.01"
+                                    class="w-full"
+                                    name="to_pay"
+                                    v-model:value="record.toPay"
+                                    @change="handlePay($event, index)"
+                                >
+                                </a-input-number>
                             </template>
                         </template>
                     </a-table>
                 </div>
+                <div class="flex justify-end">
+                    <a-button
+                        @click="submit()"
+                        type="primary"
+                        :disabled="isDisable"
+                    >
+                        Okay
+                    </a-button>
+                </div>
             </a-modal>
+            <div></div>
         </div>
     </AuthenticatedLayout>
 </template>

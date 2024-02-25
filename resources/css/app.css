@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+.page-title {
+    font-weight: 600 !important;
+    font-size: 28px !important;
+    line-height: 33.6px !important;
+    color: #000 !important;
+}
+
 .ant-table-thead .ant-table-cell{
     background-color:gray !important;
 }

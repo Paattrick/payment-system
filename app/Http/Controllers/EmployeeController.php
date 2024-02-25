@@ -23,8 +23,9 @@ class EmployeeController extends Controller
         $employees = User::query()
             ->whereHas('roles', fn ($query) => $query->where('name', 'employee'))
             ->whereNot('name', 'admin')
-            ->when($request->filled('grade'), fn ($query) => $query->where('grade', $request->grade))
-            ->when($request->filled('section'), fn ($query) => $query->where('section', $request->section))
+            ->when(request('search'), function ($query, $search) {
+                $query->where('name', 'LIKE', "%{$search}%")->orWhere('last_name', 'LIKE', "%{$search}%");
+            })
             ->latest()
             ->paginate($request->per_page);
 

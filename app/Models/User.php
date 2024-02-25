@@ -36,7 +36,8 @@ class User extends Authenticatable
         'barangay',
         'id_number',
         'password',
-        'status'
+        'status',
+        'meta'
     ];
 
     /**
@@ -56,6 +57,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'meta' => 'json',
         'password' => 'hashed',
     ];
 }

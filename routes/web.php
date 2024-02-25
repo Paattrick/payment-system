@@ -6,6 +6,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserStudentController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ArchiveController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\HistoryController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect;
@@ -50,15 +52,19 @@ Route::middleware('auth')->group(function () {
         Route::put('/students/{student}/archive', [StudentController::class, 'archive'])->name('student.archive');
         Route::put('/students/{student}/archive-restore', [StudentController::class, 'archiveRestore'])->name('student.archive-restore');
 
-        Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
+        // Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
     });
 
     Route::group(['prefix' => 'student', 'middleware' => 'role:student'], function () {
         Route::get('/billings', [UserStudentController::class, 'index'])->name('billings.index');
+        Route::post('/billings/submit', [UserStudentController::class, 'submitFees'])->name('billings-submit.store');
         // Route::resource('/employees', EmployeeController::class);
 
         // Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
     });
+
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transaction.index');
+    Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
 });
 
 Route::get('/student/login', [StudentController::class, 'login'])->name('student.login');

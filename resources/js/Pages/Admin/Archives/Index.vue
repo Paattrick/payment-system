@@ -10,7 +10,8 @@ import {
 } from "@ant-design/icons-vue";
 import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
-import { Modal } from "ant-design-vue";
+import { Modal, message, notification } from "ant-design-vue";
+import TableComponent from "@/Components/Table.vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -80,6 +81,7 @@ const columns = ref([
 
 const showModal = ref(false);
 const isEditing = ref(false);
+const loading = ref(false);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -132,43 +134,74 @@ const handleDelete = (val) => {
         okText: "OK",
         onOk() {
             router.put(route("student.archive-restore", val.id));
-            message.success("Successfully Restored!");
+            notification.success({
+                placement: "topRight",
+                duration: 3,
+                rtl: true,
+                message: "Successfully Restored",
+                description: "Restored Student can be access in Students Page.",
+            });
         },
         cancelText: "Cancel",
     });
 };
 
-const handleRedirectBack = () => {
-    router.visit(route("students-filter.index"));
+const refresh = () => {
+    router.reload({
+        onStart: () => {
+            loading.value = true;
+        },
+        onFinish: () => {
+            loading.value = false;
+        },
+    });
 };
 </script>
 <template>
     <AuthenticatedLayout>
         <div>
-            <a-table :dataSource="props.archives.data" :columns="columns">
-                <template #bodyCell="{ column, record, text }">
-                    <template v-if="column.dataIndex === 'actions'">
-                        <div class="flex space-x-4">
-                            <div @click="handleEdit(record)">
-                                <a-tooltip placement="topLeft">
-                                    <template #title>
-                                        <span>Edit</span>
-                                    </template>
-                                    <a-button><EditFilled /></a-button>
-                                </a-tooltip>
-                            </div>
-                            <div @click="handleDelete(record)">
-                                <a-tooltip placement="topLeft">
-                                    <template #title>
-                                        <span>Restore</span>
-                                    </template>
-                                    <a-button><RedoOutlined /></a-button>
-                                </a-tooltip>
+            <div class="page-title height-md:mb-30">Archives</div>
+
+            <div>
+                <TableComponent
+                    :dataSource="props.archives.data"
+                    :columns="columns"
+                    :isLoading="loading"
+                    :paginationData="props.archives.meta"
+                >
+                    <template #actionButtons>
+                        <div class="flex justify-between">
+                            <div>
+                                <a-button @click="refresh()">Refresh</a-button>
                             </div>
                         </div>
                     </template>
-                </template>
-            </a-table>
+                    <template #customColumn="slotProps">
+                        <template
+                            v-if="slotProps.column.dataIndex === 'actions'"
+                        >
+                            <div class="flex space-x-4">
+                                <div @click="handleEdit(slotProps.record)">
+                                    <a-tooltip placement="topLeft">
+                                        <template #title>
+                                            <span>Edit</span>
+                                        </template>
+                                        <a-button><EditFilled /></a-button>
+                                    </a-tooltip>
+                                </div>
+                                <div @click="handleDelete(slotProps.record)">
+                                    <a-tooltip placement="topLeft">
+                                        <template #title>
+                                            <span>Restore</span>
+                                        </template>
+                                        <a-button><RedoOutlined /></a-button>
+                                    </a-tooltip>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </TableComponent>
+            </div>
         </div>
         <a-modal
             v-model:open="showModal"

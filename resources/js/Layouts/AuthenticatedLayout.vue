@@ -32,71 +32,119 @@ const page = usePage();
                             <div
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
                             >
-                                <NavLink
+                                <Link
                                     v-if="
                                         page.props.auth.role.is_admin ||
                                         page.props.auth.role.is_employee
                                     "
-                                    :href="route('students-filter.index')"
-                                    :active="
-                                        route().current('students-filter.index')
-                                    "
-                                    class="text-white"
+                                    :href="route('students.index')"
+                                    :active="route().current('students.index')"
+                                    class="text-white py-6"
                                 >
-                                    Student
-                                </NavLink>
-                                <NavLink
+                                    <div
+                                        :class="
+                                            route().current('students.index')
+                                                ? 'py-1 rounded-md font-medium tracking-wide'
+                                                : ''
+                                        "
+                                    >
+                                        Students
+                                    </div>
+                                </Link>
+                                <Link
                                     v-if="
                                         page.props.auth.role.is_admin ||
                                         page.props.auth.role.is_employee
                                     "
                                     :href="route('employees.index')"
                                     :active="route().current('employees.index')"
-                                    class="text-white"
+                                    class="text-white py-6"
                                 >
-                                    Employee
-                                </NavLink>
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                    class="text-white"
+                                    <div
+                                        :class="
+                                            route().current('employees.index')
+                                                ? 'py-1 rounded-md font-medium tracking-wide'
+                                                : ''
+                                        "
+                                    >
+                                        Collectors
+                                    </div>
+                                </Link>
+                                <Link
+                                    :href="route('transaction.index')"
+                                    :active="
+                                        route().current('transaction.index')
+                                    "
+                                    class="text-white py-6"
                                 >
-                                    Transactions
-                                </NavLink>
-                                <NavLink
+                                    <div
+                                        :class="
+                                            route().current('transaction.index')
+                                                ? 'py-1 rounded-md font-medium tracking-wide'
+                                                : ''
+                                        "
+                                    >
+                                        Transactions
+                                    </div>
+                                </Link>
+                                <Link
                                     :href="
                                         page.props.auth.role.is_student
                                             ? route('billings.index')
                                             : route('fees.index')
                                     "
                                     :active="route().current('fees.index')"
-                                    class="text-white"
+                                    class="text-white py-6"
                                 >
-                                    {{
-                                        page.props.auth.role.is_admin ||
-                                        page.props.auth.role.is_employee
-                                            ? "Fees"
-                                            : "Billings"
-                                    }}
-                                </NavLink>
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                    class="text-white"
+                                    <div
+                                        :class="
+                                            route().current('fees.index')
+                                                ? 'py-1 rounded-md font-medium tracking-wide'
+                                                : ''
+                                        "
+                                    >
+                                        {{
+                                            page.props.auth.role.is_admin ||
+                                            page.props.auth.role.is_employee
+                                                ? "Fees"
+                                                : "Billings"
+                                        }}
+                                    </div>
+                                </Link>
+                                <Link
+                                    :href="route('history.index')"
+                                    :active="route().current('history.index')"
+                                    class="text-white py-6"
                                 >
-                                    History
-                                </NavLink>
-                                <NavLink
+                                    <div
+                                        :class="
+                                            route().current('history.index')
+                                                ? 'py-1 rounded-md font-medium tracking-wide'
+                                                : ''
+                                        "
+                                    >
+                                        History
+                                    </div>
+                                </Link>
+                                <Link
                                     v-if="
                                         page.props.auth.role.is_admin ||
                                         page.props.auth.role.is_employee
                                     "
                                     :href="route('archives.index')"
                                     :active="route().current('archives.index')"
-                                    class="text-white"
+                                    class="text-white py-6"
                                 >
-                                    Archives
-                                </NavLink>
+                                    <div
+                                        :class="
+                                            route().current('archives.index')
+                                                ? 'py-1 rounded-md font-medium tracking-wide'
+                                                : ''
+                                        "
+                                    >
+                                        Archives
+                                    </div>
+                                </Link>
                             </div>
                         </div>
 
@@ -234,7 +282,9 @@ const page = usePage();
             </nav>
 
             <!-- Page Heading -->
-            <header class="bg-white py-8 height-md:mb-32 flex-1 relative">
+            <header
+                class="bg-gray-200 min-h-screen py-8 height-md:mb-32 flex-1 relative"
+            >
                 <div class="py-8 height-md:mb-32 max-w-7xl mx-auto">
                     <slot />
                 </div>

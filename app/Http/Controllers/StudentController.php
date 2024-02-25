@@ -19,13 +19,16 @@ class StudentController extends Controller
 
         $request->merge([
             'per_page' => $request->per_page ?: '15',
+            'grade' => $request->grade ?: '12',
         ]);
 
         $students = User::query()
             ->whereHas('roles', fn ($query) => $query->where('name', 'student'))
-            ->when($request->filled('name'), fn ($query) => $query->where('name', 'LIKE', "%{$request->name}%")->orWhere('last_name', 'LIKE', "%{$request->name}%"))
             ->when($request->filled('grade'), fn ($query) => $query->where('grade', $request->grade))
             ->when($request->filled('section'), fn ($query) => $query->where('section', $request->section))
+            ->when(request('search'), function ($query, $search) {
+                $query->where('name', 'LIKE', "%{$search}%")->orWhere('last_name', 'LIKE', "%{$search}%");
+            })
             ->where('status', 'active')
             ->latest()
             ->paginate($request->per_page);
@@ -99,7 +102,8 @@ class StudentController extends Controller
                 'barangay' => $validated['barangay'],
                 'id_number' => $validated['id_number'],
                 'password' => $encrypted_password,
-                'email' => $validated['id_number'] . '@gnhs.edu.ph'
+                'email' => $validated['id_number'] . '@gnhs.edu.ph',
+                'status' => 'active'
             ]
         )->assignRole('student');
 

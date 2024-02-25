@@ -29,19 +29,14 @@ const balance = ref(0);
 
 const columns = ref([
     {
-        title: "Name of Collection",
+        title: "Name ",
         dataIndex: "name",
         key: "name",
     },
     {
-        title: "Specific",
+        title: "Message",
         dataIndex: "meta",
         key: "meta",
-    },
-    {
-        title: "Amount",
-        dataIndex: "amount",
-        key: "amount",
     },
     {
         title: "Actions",
@@ -158,11 +153,11 @@ const refresh = () => {
 <template>
     <AuthenticatedLayout>
         <div>
-            <div class="page-title height-md:mb-30">Fees</div>
+            <div class="page-title height-md:mb-30">Transactions</div>
 
             <div>
                 <TableComponent
-                    :dataSource="props.fees.data"
+                    :dataSource="null"
                     :columns="columns"
                     :isLoading="loading"
                 >
@@ -170,11 +165,6 @@ const refresh = () => {
                         <div class="flex justify-between">
                             <div>
                                 <a-button @click="refresh()">Refresh</a-button>
-                            </div>
-                            <div class="justify-end">
-                                <a-button type="primary" @click="handleAdd">
-                                    Add Fee
-                                </a-button>
                             </div>
                         </div>
                     </template>

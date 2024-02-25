@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import InputError from "@/Components/InputError.vue";
+import TableComponent from "@/Components/Table.vue";
 import { ref, h } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
 import {
@@ -10,7 +11,8 @@ import {
 } from "@ant-design/icons-vue";
 import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
-import { Modal } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
+import { watchDebounced } from "@vueuse/core";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -37,6 +39,39 @@ const form = useForm({
     password: null,
     confirmation: null,
 });
+
+const search = ref(null);
+const loading = ref(false);
+const grade = ref(null);
+const section = ref(null);
+
+watchDebounced(
+    [search, grade, section],
+    (data) => {
+        router.get(
+            window.location.pathname,
+            {
+                search: search.value,
+                grade: grade.value,
+                section: section.value,
+            },
+            {
+                preserveScroll: true,
+                replace: true,
+                preserveState: true,
+                onStart: () => {
+                    loading.value = true;
+                },
+                onFinish: () => {
+                    loading.value = false;
+                },
+            }
+        );
+    },
+    {
+        debounce: 300,
+    }
+);
 
 const columns = ref([
     {
@@ -132,31 +167,109 @@ const handleDelete = (val) => {
         okText: "OK",
         onOk() {
             router.put(route("student.archive", val.id));
-            message.success("Successfully Sent to Archives!");
+            notification.success({
+                placement: "topRight",
+                duration: 3,
+                rtl: true,
+                message: "Successfully Sent to Archives",
+                description: "Archived students can be accessed in Archives.",
+            });
         },
         cancelText: "Cancel",
     });
 };
 
-const handleRedirectBack = () => {
-    router.visit(route("students-filter.index"));
+const refresh = () => {
+    router.reload({
+        onStart: () => {
+            loading.value = true;
+        },
+        onFinish: () => {
+            loading.value = false;
+        },
+    });
 };
 </script>
 <template>
     <AuthenticatedLayout>
         <div>
-            <div class="mb-4 flex space-x-4">
-                <a-button type="primary" @click="handleAdd">
-                    Add Student
-                </a-button>
-                <a-button @click="handleRedirectBack"> Back </a-button>
-            </div>
+            <div class="page-title height-md:mb-30">Students</div>
             <div>
-                <a-table :dataSource="props.students.data" :columns="columns">
-                    <template #bodyCell="{ column, record, text }">
-                        <template v-if="column.dataIndex === 'actions'">
+                <TableComponent
+                    :dataSource="props.students.data"
+                    :columns="columns"
+                    :isLoading="loading"
+                    :paginationData="props.students.meta"
+                >
+                    <template #actionButtons>
+                        <div class="flex justify-between">
                             <div class="flex space-x-4">
-                                <div @click="handleEdit(record)">
+                                <div class="w-auto">
+                                    <a-input-search
+                                        v-model:value="search"
+                                        placeholder="Search Student"
+                                        allowClear
+                                    />
+                                </div>
+                                <div>
+                                    <a-select
+                                        class="w-[200px]"
+                                        placeholder="Select Grade"
+                                        v-model:value="grade"
+                                        allowClear
+                                        :options="grades()"
+                                        :filter-option="
+                                            (input, option) =>
+                                                option.label
+                                                    .toLowerCase()
+                                                    .indexOf(
+                                                        input.toLowerCase()
+                                                    ) >= 0
+                                        "
+                                    >
+                                    </a-select>
+                                </div>
+                                <div>
+                                    <a-select
+                                        class="w-[200px]"
+                                        :placeholder="
+                                            Number(grade) > 10
+                                                ? 'Strand'
+                                                : 'Section'
+                                        "
+                                        v-model:value="section"
+                                        allowClear
+                                        :options="
+                                            Number(grade) > 10
+                                                ? strands()
+                                                : sections()
+                                        "
+                                        :filter-option="
+                                            (input, option) =>
+                                                option.label
+                                                    .toLowerCase()
+                                                    .indexOf(
+                                                        input.toLowerCase()
+                                                    ) >= 0
+                                        "
+                                    >
+                                    </a-select>
+                                </div>
+                                <a-button @click="refresh()">Refresh</a-button>
+                            </div>
+                            <div class="justify-end">
+                                <a-button type="primary" @click="handleAdd">
+                                    Add Student
+                                </a-button>
+                            </div>
+                        </div>
+                    </template>
+                    <template #customColumn="slotProps">
+                        <template
+                            v-if="slotProps.column.dataIndex === 'actions'"
+                        >
+                            <div class="flex space-x-4">
+                                <div @click="handleEdit(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
                                             <span>Edit</span>
@@ -164,7 +277,7 @@ const handleRedirectBack = () => {
                                         <a-button><EditFilled /></a-button>
                                     </a-tooltip>
                                 </div>
-                                <div @click="handleDelete(record)">
+                                <div @click="handleDelete(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
                                             <span>Archive</span>
@@ -175,7 +288,7 @@ const handleRedirectBack = () => {
                             </div>
                         </template>
                     </template>
-                </a-table>
+                </TableComponent>
             </div>
             <a-modal
                 v-model:open="showModal"
