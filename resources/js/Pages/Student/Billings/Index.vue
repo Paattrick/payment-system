@@ -119,21 +119,18 @@ const handleEdit = (val) => {
 
 const submit = () => {
     router.post(
-        route(
-            "billings-submit.store",
-            {
-                fees: form.value,
-                student: page.props.auth.user,
-                file: file.value,
+        route("billings-submit.store", {
+            fees: form.value,
+            student: page.props.auth.user,
+            file: file.value,
+        }),
+        {
+            onStart: () => (submitLoading.value = true),
+            onFinish: () => (submitLoading.value = false),
+            onSuccess: () => {
+                showFileModal.value = false;
             },
-            {
-                onStart: () => (submitLoading.value = true),
-                onFinish: () => (submitLoading.value = false),
-                onSuccess: () => {
-                    showFileModal.value = false;
-                },
-            }
-        )
+        }
     );
 };
 

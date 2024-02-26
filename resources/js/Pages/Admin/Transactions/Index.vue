@@ -23,7 +23,7 @@ const form = useForm({
     name: null,
     meta: [],
 });
-console.log(page.props.auth.role.is_admin);
+
 const clearance = ref("");
 const amount = ref(0);
 const toPay = ref(0);
