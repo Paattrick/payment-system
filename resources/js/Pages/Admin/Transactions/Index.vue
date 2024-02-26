@@ -163,6 +163,8 @@ const viewPayment = (val) => {
     selectedStudentId.value = val.student_id;
     transactionId.value = val.id;
 };
+
+const handleDecline = () => {};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -329,9 +331,9 @@ const viewPayment = (val) => {
                     </a-table>
                     <div
                         class="flex justify-end mt-5"
-                        v-if="page.props.auth.role.is_collector"
+                        v-if="page.props.auth.role.is_employee"
                     >
-                        <a-button class="mr-2" @click.prevent="handleCancel"
+                        <a-button class="mr-2" @click.prevent="handleDecline"
                             >Decline</a-button
                         >
                         <a-button
