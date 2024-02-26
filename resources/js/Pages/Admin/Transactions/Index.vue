@@ -23,7 +23,7 @@ const form = useForm({
     name: null,
     meta: [],
 });
-
+console.log(page.props.auth.role);
 const clearance = ref("");
 const amount = ref(0);
 const toPay = ref(0);
@@ -297,14 +297,14 @@ const viewPayment = (val) => {
                         <template #bodyCell="{ column, record, text }">
                             <template v-if="column.dataIndex === 'meta'">
                                 <div v-for="(val, i) in record.meta" :key="i">
-                                    <div class="mb-2">
+                                    <div v-if="val.toPay !== '0'" class="mb-2">
                                         {{ val.clearance }}
                                     </div>
                                 </div>
                             </template>
                             <template v-if="column.dataIndex === 'amount'">
                                 <div v-for="(val, i) in record.meta" :key="i">
-                                    <div class="mb-2">
+                                    <div class="mb-2" v-if="val.toPay !== '0'">
                                         <ul class="list-disc">
                                             <li>
                                                 {{
@@ -323,7 +323,10 @@ const viewPayment = (val) => {
                             </template>
                         </template>
                     </a-table>
-                    <div class="flex justify-end mt-5">
+                    <div
+                        class="flex justify-end mt-5"
+                        v-if="page.props.auth.role.isStudent"
+                    >
                         <a-button class="mr-2" @click.prevent="handleCancel"
                             >Decline</a-button
                         >
