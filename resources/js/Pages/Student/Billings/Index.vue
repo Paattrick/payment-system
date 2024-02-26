@@ -4,6 +4,7 @@ import { router, useForm, usePage } from "@inertiajs/vue3";
 import { Modal, message } from "ant-design-vue";
 import { onMounted, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
+import InputError from "@/Components/InputError.vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -115,7 +116,7 @@ const submit = () => {
             fees: form.value,
             student: page.props.auth.user,
             file: file.value,
-            onSucces: () => {
+            onSuccess: () => {
                 showFileModal.value = false;
             },
         })
@@ -157,7 +158,6 @@ const refresh = () => {
 
 const onSelectChange = (value) => {
     selectedBillings.value = value;
-    console.log(value);
 };
 
 const proceedPayment = () => {
@@ -172,7 +172,6 @@ const proceedPayment = () => {
     for (let i = 0; i < total.length; i++) {
         sum.value += total[i];
     }
-    console.log(sum.value);
 
     showQr.value = true;
 };

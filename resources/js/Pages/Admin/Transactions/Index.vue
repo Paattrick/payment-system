@@ -329,7 +329,7 @@ const viewPayment = (val) => {
                     </a-table>
                     <div
                         class="flex justify-end mt-5"
-                        v-if="page.props.auth.role.is_student"
+                        v-if="page.props.auth.role.is_collector"
                     >
                         <a-button class="mr-2" @click.prevent="handleCancel"
                             >Decline</a-button
