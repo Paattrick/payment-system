@@ -68,6 +68,13 @@ const descriptionColumns = ref([
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
+const selectedBillings = ref({});
+const selectedBillingsDisabled = ref(false);
+const meta = ref({});
+const sum = ref(0);
+const showQr = ref(false);
+const showFileModal = ref(false);
+const file = ref(null);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -107,8 +114,10 @@ const submit = () => {
         route("billings-submit.store", {
             fees: form.value,
             student: page.props.auth.user,
+            file: file.value,
         })
     );
+    console.log(meta.value);
 };
 
 const update = () => {
@@ -143,6 +152,32 @@ const refresh = () => {
         },
     });
 };
+
+const onSelectChange = (value) => {
+    selectedBillings.value = value;
+};
+
+const proceedPayment = () => {
+    const total = [];
+    if (form.meta !== undefined) {
+        form.meta.forEach((element) => {
+            total.push(Number(element.toPay));
+        });
+    }
+
+    // iterate over each item in the array
+    for (let i = 0; i < total.length; i++) {
+        sum.value += total[i];
+    }
+    console.log(sum.value);
+
+    showQr.value = true;
+};
+
+const uploadFile = () => {
+    showQr.value = false;
+    showFileModal.value = true;
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -153,11 +188,20 @@ const refresh = () => {
                     :dataSource="props.fees.data"
                     :columns="columns"
                     :isLoading="loading"
+                    :hasRowSelection="true"
+                    @onSelectChange="onSelectChange($event)"
                 >
                     <template #actionButtons>
                         <div class="flex justify-between">
                             <div class="flex space-x-4">
                                 <a-button @click="refresh()">Refresh</a-button>
+                            </div>
+                            <div class="flex justify-end">
+                                <a-button
+                                    type="primary"
+                                    @click="proceedPayment()"
+                                    >Pay Selected Billings</a-button
+                                >
                             </div>
                         </div>
                     </template>
@@ -255,7 +299,7 @@ const refresh = () => {
                 </div>
                 <div class="flex justify-end">
                     <a-button
-                        @click="submit()"
+                        @click="showModal = false"
                         type="primary"
                         :disabled="isDisable"
                     >
@@ -263,7 +307,48 @@ const refresh = () => {
                     </a-button>
                 </div>
             </a-modal>
-            <div></div>
+            <div>
+                <a-modal
+                    v-model:open="showQr"
+                    title="Scan To Pay"
+                    :footer="null"
+                >
+                    <div class="">
+                        <div class="flex pl-8">
+                            <img
+                                class="w-[400px] h-[600px]"
+                                src="../../../../../public/build/assets/QR.jpg"
+                            />
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-5">
+                        <a-button @click="uploadFile()" type="primary">
+                            Proceed Payment
+                        </a-button>
+                    </div>
+                </a-modal>
+            </div>
+            <div>
+                <a-modal
+                    v-model:open="showFileModal"
+                    title="Payment"
+                    :footer="null"
+                >
+                    <a-form>
+                        <a-form-item
+                            label="Upload Screenshot"
+                            layout="vertical"
+                        >
+                            <a-input v-model:value="file" type="file" />
+                        </a-form-item>
+                    </a-form>
+                    <div class="flex justify-end pt-5">
+                        <a-button @click="submit()" type="primary">
+                            Submit
+                        </a-button>
+                    </div>
+                </a-modal>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>

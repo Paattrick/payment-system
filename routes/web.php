@@ -63,8 +63,17 @@ Route::middleware('auth')->group(function () {
         // Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
     });
 
+    Route::group(['prefix' => 'student', 'middleware' => 'role:collector'], function () {
+        // Route::post('/billings/{student}/submit-payment', [UserStudentController::class, 'submitPayment'])->name('submit-payment.store');
+        // Route::resource('/employees', EmployeeController::class);
+
+        // Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
+    });
+
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transaction.index');
     Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
+
+    Route::post('/billings/{student}/submit-payment', [UserStudentController::class, 'submitPayment'])->name('submit-payment.store');
 });
 
 Route::get('/student/login', [StudentController::class, 'login'])->name('student.login');

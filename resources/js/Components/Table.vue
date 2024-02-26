@@ -3,6 +3,15 @@ import { ref } from "vue";
 import { watchDebounced } from "@vueuse/core";
 import { computed } from "@vue/reactivity";
 
+const emit = defineEmits([
+    "handleAdd",
+    "handleSearch",
+    "handleRefresh",
+    "change",
+    "onSelectChange",
+    "handleChangeActiveNumbers",
+]);
+
 const props = defineProps({
     currentPage: String,
     dataSource: {

@@ -14,9 +14,9 @@ import TableComponent from "@/Components/Table.vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
-    fees: Object,
+    histories: Object,
 });
-
+console.log(props.histories);
 const form = useForm({
     name: null,
     meta: [],
@@ -35,14 +35,13 @@ const columns = ref([
     },
     {
         title: "Message",
-        dataIndex: "meta",
-        key: "meta",
+        dataIndex: "message",
+        key: "message",
     },
     {
-        title: "Actions",
-        dataIndex: "actions",
-        key: "actions",
-        width: 8,
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
     },
 ]);
 
@@ -157,7 +156,7 @@ const refresh = () => {
 
             <div>
                 <TableComponent
-                    :dataSource="null"
+                    :dataSource="props.histories.data"
                     :columns="columns"
                     :isLoading="loading"
                 >
@@ -169,43 +168,40 @@ const refresh = () => {
                         </div>
                     </template>
                     <template #customColumn="slotProps">
-                        <template v-if="slotProps.column.dataIndex === 'meta'">
-                            <div
-                                v-for="(val, i) in slotProps.record.meta"
-                                :key="i"
-                            >
-                                <div class="mb-2">
-                                    <ul class="list-disc">
-                                        <li>{{ val.clearance }}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </template>
                         <template
-                            v-if="slotProps.column.dataIndex === 'amount'"
+                            v-if="slotProps.column.dataIndex === 'message'"
                         >
-                            <div
-                                v-for="(val, i) in slotProps.record.meta"
-                                :key="i"
-                            >
-                                <div class="mb-2">
-                                    {{
-                                        new Intl.NumberFormat("PHP", {
-                                            style: "currency",
-                                            currency: "PHP",
-                                        }).format(val.amount)
-                                    }}
-                                </div>
-                            </div>
+                            {{ slotProps.record.name }}
+                            {{ "Submitted a Payment" }}
                         </template>
                         <template
+                            v-if="slotProps.column.dataIndex === 'status'"
+                        >
+                            <div v-if="slotProps.record.status === 'accepted'">
+                                <a-tag
+                                    class="font-semibold capitalize"
+                                    color="#86EFAC"
+                                >
+                                    {{ slotProps.record.status }}
+                                </a-tag>
+                            </div>
+                            <div v-if="slotProps.record.status === 'declined'">
+                                <a-tag
+                                    class="font-semibold capitalize"
+                                    color="#f50"
+                                >
+                                    {{ slotProps.record.status }}
+                                </a-tag>
+                            </div>
+                        </template>
+                        <!-- <template
                             v-if="slotProps.column.dataIndex === 'actions'"
                         >
                             <div class="flex space-x-4">
                                 <div @click="handleEdit(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
-                                            <span>Edit</span>
+                                            <span>View Payment</span>
                                         </template>
                                         <a-button><EditFilled /></a-button>
                                     </a-tooltip>
@@ -219,7 +215,7 @@ const refresh = () => {
                                     </a-tooltip>
                                 </div>
                             </div>
-                        </template>
+                        </template> -->
                     </template>
                 </TableComponent>
             </div>

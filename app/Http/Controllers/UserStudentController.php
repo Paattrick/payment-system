@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Fee;
 use App\Models\User;
+use App\Models\History;
 use App\Http\Resources\FeeResource;
 
 class UserStudentController extends Controller
@@ -27,19 +28,34 @@ class UserStudentController extends Controller
 
     public function submitFees(Request $request, User $student)
     {
-
-        dd($request);
-        $request->merge([
-            'per_page' => $request->per_page ?: '15',
+        $validateFile = $request->validate([
+            'file' => 'required'
         ]);
 
-        // $fees = Fee::query()
-        //     ->whereNotNull('name')
-        //     ->latest()
-        //     ->paginate($request->per_page);
+        $history = History::create([
+            'student_id' => $request->student['id'],
+            'name' => $request->student['name'],
+            'meta' => $request->fees,
+            'file' => $validateFile['file'],
+            'status' => 'pending'
+        ]);
 
-        // return Inertia::render('Student/Billings/Index', [
-        //     'fees' => FeeResource::collection($fees)
-        // ]);
+        return redirect()->back();
+    }
+
+    public function submitPayment(Request $request, User $student)
+    {
+        $student->update([
+            'meta' => $request->meta,
+        ]);
+
+        $history = History::where('student_id', $student->id)
+            ->update([
+                'status' => 'accepted'
+            ]);
+
+        $student->save();
+
+        return redirect()->back();
     }
 }

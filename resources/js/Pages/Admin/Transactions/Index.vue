@@ -14,9 +14,9 @@ import TableComponent from "@/Components/Table.vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
-    fees: Object,
+    transactions: Object,
 });
-
+console.log(props.transactions.data);
 const form = useForm({
     name: null,
     meta: [],
@@ -26,6 +26,7 @@ const clearance = ref("");
 const amount = ref(0);
 const toPay = ref(0);
 const balance = ref(0);
+const selectedStudentId = ref(null);
 
 const columns = ref([
     {
@@ -35,8 +36,8 @@ const columns = ref([
     },
     {
         title: "Message",
-        dataIndex: "meta",
-        key: "meta",
+        dataIndex: "message",
+        key: "message",
     },
     {
         title: "Actions",
@@ -59,17 +60,13 @@ const descriptionColumns = ref([
         key: "amount",
         align: "center",
     },
-    {
-        title: "Actions",
-        dataIndex: "actions",
-        key: "actions",
-        width: 8,
-    },
 ]);
 
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
+const showPaymentModal = ref(false);
+const meta = ref(null);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -107,13 +104,19 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    form.post(route("fees.store"), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            showModal.value = false;
+    router.post(
+        route("submit-payment.store", selectedStudentId.value),
+        {
+            meta: meta.value,
         },
-    });
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                showPaymentModal.value = false;
+            },
+        }
+    );
 };
 
 const update = () => {
@@ -121,7 +124,7 @@ const update = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            showModal.value = false;
+            showPaymentModal.value = false;
         },
     });
 };
@@ -149,6 +152,12 @@ const refresh = () => {
         },
     });
 };
+
+const viewPayment = (val) => {
+    meta.value = val.meta;
+    showPaymentModal.value = true;
+    selectedStudentId.value = val.student_id;
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -157,7 +166,7 @@ const refresh = () => {
 
             <div>
                 <TableComponent
-                    :dataSource="null"
+                    :dataSource="props.transactions.data"
                     :columns="columns"
                     :isLoading="loading"
                 >
@@ -169,43 +178,20 @@ const refresh = () => {
                         </div>
                     </template>
                     <template #customColumn="slotProps">
-                        <template v-if="slotProps.column.dataIndex === 'meta'">
-                            <div
-                                v-for="(val, i) in slotProps.record.meta"
-                                :key="i"
-                            >
-                                <div class="mb-2">
-                                    <ul class="list-disc">
-                                        <li>{{ val.clearance }}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </template>
                         <template
-                            v-if="slotProps.column.dataIndex === 'amount'"
+                            v-if="slotProps.column.dataIndex === 'message'"
                         >
-                            <div
-                                v-for="(val, i) in slotProps.record.meta"
-                                :key="i"
-                            >
-                                <div class="mb-2">
-                                    {{
-                                        new Intl.NumberFormat("PHP", {
-                                            style: "currency",
-                                            currency: "PHP",
-                                        }).format(val.amount)
-                                    }}
-                                </div>
-                            </div>
+                            {{ slotProps.record.name }}
+                            {{ "Submitted a Payment" }}
                         </template>
                         <template
                             v-if="slotProps.column.dataIndex === 'actions'"
                         >
                             <div class="flex space-x-4">
-                                <div @click="handleEdit(slotProps.record)">
+                                <div @click="viewPayment(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
-                                            <span>Edit</span>
+                                            <span>View Payment</span>
                                         </template>
                                         <a-button><EditFilled /></a-button>
                                     </a-tooltip>
@@ -295,6 +281,55 @@ const refresh = () => {
                         >
                     </div>
                 </a-form>
+            </a-modal>
+            <a-modal
+                v-model:open="showPaymentModal"
+                title="Payment"
+                :footer="null"
+            >
+                <div>
+                    <a-table :dataSource="meta" :columns="descriptionColumns">
+                        <template #bodyCell="{ column, record, text }">
+                            <template v-if="column.dataIndex === 'meta'">
+                                <div v-for="(val, i) in record.meta" :key="i">
+                                    <div class="mb-2">
+                                        {{ val.clearance }}
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-if="column.dataIndex === 'amount'">
+                                <div v-for="(val, i) in record.meta" :key="i">
+                                    <div class="mb-2">
+                                        <ul class="list-disc">
+                                            <li>
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "PHP",
+                                                        {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                        }
+                                                    ).format(val.amount)
+                                                }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </a-table>
+                    <div class="flex justify-end mt-5">
+                        <a-button class="mr-2" @click.prevent="handleCancel"
+                            >Decline</a-button
+                        >
+                        <a-button
+                            type="primary"
+                            :loading="form.processing"
+                            @click.prevent="submit()"
+                            >Accept</a-button
+                        >
+                    </div>
+                </div>
             </a-modal>
         </div>
     </AuthenticatedLayout>
