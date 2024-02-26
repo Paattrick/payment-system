@@ -186,7 +186,10 @@ const handleDecline = () => {
                         <template
                             v-if="slotProps.column.dataIndex === 'actions'"
                         >
-                            <div class="flex space-x-4">
+                            <div
+                                v-if="!page.props.auth.role.is_student"
+                                class="flex space-x-4"
+                            >
                                 <div @click="viewPayment(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
