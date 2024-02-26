@@ -7,7 +7,7 @@ import {
     ExclamationCircleFilled,
     RestFilled,
 } from "@ant-design/icons-vue";
-import { useForm, router } from "@inertiajs/vue3";
+import { useForm, router, usePage } from "@inertiajs/vue3";
 import { Modal, message } from "ant-design-vue";
 import { h, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
@@ -16,7 +16,9 @@ const [modal] = Modal.useModal();
 const props = defineProps({
     transactions: Object,
 });
-console.log(props.transactions.data);
+
+const page = usePage();
+
 const form = useForm({
     name: null,
     meta: [],
@@ -254,7 +256,7 @@ const viewPayment = (val) => {
                                             new Intl.NumberFormat("PHP", {
                                                 style: "currency",
                                                 currency: "PHP",
-                                            }).format(record.toPay)
+                                            }).format(record.amount)
                                         }}
                                     </template>
                                     <template
@@ -309,7 +311,7 @@ const viewPayment = (val) => {
                                                             style: "currency",
                                                             currency: "PHP",
                                                         }
-                                                    ).format(val.amount)
+                                                    ).format(val.toPay)
                                                 }}
                                             </li>
                                         </ul>
