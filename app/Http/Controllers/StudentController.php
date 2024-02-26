@@ -19,7 +19,6 @@ class StudentController extends Controller
 
         $request->merge([
             'per_page' => $request->per_page ?: '15',
-            'grade' => $request->grade ?: '12',
         ]);
 
         $students = User::query()
