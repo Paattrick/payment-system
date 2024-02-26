@@ -49,7 +49,7 @@ class UserStudentController extends Controller
             'meta' => $request->meta,
         ]);
 
-        $history = History::where('student_id', $student->id)
+        $history = History::where('id', $request->transactionId)
             ->update([
                 'status' => 'accepted'
             ]);

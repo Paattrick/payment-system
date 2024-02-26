@@ -69,6 +69,7 @@ const isEditing = ref(false);
 const loading = ref(false);
 const showPaymentModal = ref(false);
 const meta = ref(null);
+const transactionId = ref(null);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -110,6 +111,7 @@ const submit = () => {
         route("submit-payment.store", selectedStudentId.value),
         {
             meta: meta.value,
+            transactionId: transactionId.value,
         },
         {
             preserveScroll: true,
@@ -159,6 +161,7 @@ const viewPayment = (val) => {
     meta.value = val.meta;
     showPaymentModal.value = true;
     selectedStudentId.value = val.student_id;
+    transactionId.value = val.id;
 };
 </script>
 <template>
