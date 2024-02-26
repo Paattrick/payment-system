@@ -17,6 +17,8 @@ const page = usePage();
 const isDisable = ref(false);
 const totalToPay = ref(0);
 
+console.log(page.props.auth.user.meta);
+
 onMounted(() => {
     form.value = { ...props.fees.data };
 });
@@ -36,6 +38,12 @@ const columns = ref([
         title: "Amount",
         dataIndex: "amount",
         key: "amount",
+    },
+    {
+        title: "Balance",
+        dataIndex: "balance",
+        key: "balance",
+        align: "center",
     },
     {
         title: "Actions",
@@ -76,6 +84,7 @@ const sum = ref(0);
 const showQr = ref(false);
 const showFileModal = ref(false);
 const file = ref(null);
+const submitLoading = ref(false);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -111,16 +120,24 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    router.post(
-        route("billings-submit.store", {
-            fees: form.value,
-            student: page.props.auth.user,
-            file: file.value,
-            onSuccess: () => {
-                showFileModal.value = false;
-            },
-        })
-    );
+    console.log(form.meta);
+    // router.post(
+    //     route(
+    //         "billings-submit.store",
+    //         {
+    //             fees: form.value,
+    //             student: page.props.auth.user,
+    //             file: file.value,
+    //         },
+    //         {
+    //             onStart: () => (submitLoading.value = true),
+    //             onFinish: () => (submitLoading.value = false),
+    //             onSuccess: () => {
+    //                 showFileModal.value = false;
+    //             },
+    //         }
+    //     )
+    // );
 };
 
 const update = () => {
@@ -187,7 +204,7 @@ const uploadFile = () => {
             <div class="page-title height-md:mb-30">Billings</div>
             <div>
                 <TableComponent
-                    :dataSource="props.fees.data"
+                    :dataSource="page.props.auth.user.meta"
                     :columns="columns"
                     :isLoading="loading"
                     :hasRowSelection="true"
@@ -235,6 +252,31 @@ const uploadFile = () => {
                                                     style: "currency",
                                                     currency: "PHP",
                                                 }).format(val.amount)
+                                            }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                        <template
+                            v-if="slotProps.column.dataIndex === 'balance'"
+                        >
+                            <div
+                                v-for="(val, i) in slotProps.record.meta"
+                                :key="i"
+                            >
+                                <div class="mb-2">
+                                    <ul class="list-disc">
+                                        <li>
+                                            {{
+                                                new Intl.NumberFormat("PHP", {
+                                                    style: "currency",
+                                                    currency: "PHP",
+                                                }).format(
+                                                    val.balance === "0"
+                                                        ? val.amount
+                                                        : val.balance
+                                                )
                                             }}
                                         </li>
                                     </ul>
@@ -291,7 +333,6 @@ const uploadFile = () => {
                                     :step="0.01"
                                     class="w-full"
                                     name="to_pay"
-                                    v-model:value="record.toPay"
                                     @change="handlePay($event, index)"
                                 >
                                 </a-input-number>
@@ -336,16 +377,17 @@ const uploadFile = () => {
                     title="Payment"
                     :footer="null"
                 >
-                    <a-form>
-                        <a-form-item
-                            label="Upload Screenshot"
-                            layout="vertical"
-                        >
+                    <a-form layout="vertical">
+                        <a-form-item label="Upload Screenshot">
                             <a-input v-model:value="file" type="file" />
                         </a-form-item>
                     </a-form>
                     <div class="flex justify-end pt-5">
-                        <a-button @click="submit()" type="primary">
+                        <a-button
+                            @click="submit()"
+                            type="primary"
+                            :loading="submitLoading"
+                        >
                             Submit
                         </a-button>
                     </div>

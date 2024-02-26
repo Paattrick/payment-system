@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
 
     Route::post('/billings/{student}/submit-payment', [UserStudentController::class, 'submitPayment'])->name('submit-payment.store');
+    Route::post('/billings/{student}/decline-payment', [UserStudentController::class, 'declinePayment'])->name('decline-payment.store');
 });
 
 Route::get('/student/login', [StudentController::class, 'login'])->name('student.login');

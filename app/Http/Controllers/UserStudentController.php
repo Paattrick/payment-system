@@ -58,4 +58,14 @@ class UserStudentController extends Controller
 
         return redirect()->back();
     }
+
+    public function declinePayment(Request $request, User $student)
+    {
+        $history = History::where('id', $request->transactionId)
+            ->update([
+                'status' => 'declined'
+            ]);
+
+        return redirect()->back();
+    }
 }

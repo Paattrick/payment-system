@@ -123,29 +123,6 @@ const submit = () => {
     );
 };
 
-const update = () => {
-    form.put(route("fees.update", form.id), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            showPaymentModal.value = false;
-        },
-    });
-};
-
-const handleDelete = (val) => {
-    Modal.confirm({
-        title: "Are you sure to delete this Payment?",
-        icon: h(ExclamationCircleFilled),
-        okText: "OK",
-        onOk() {
-            router.delete(route("fees.destroy", val.id));
-            message.success("Successfully Deleted!");
-        },
-        cancelText: "Cancel",
-    });
-};
-
 const refresh = () => {
     router.reload({
         onStart: () => {
@@ -164,7 +141,22 @@ const viewPayment = (val) => {
     transactionId.value = val.id;
 };
 
-const handleDecline = () => {};
+const handleDecline = () => {
+    router.post(
+        route("decline-payment.store", selectedStudentId.value),
+        {
+            meta: meta.value,
+            transactionId: transactionId.value,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                showPaymentModal.value = false;
+            },
+        }
+    );
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -201,14 +193,6 @@ const handleDecline = () => {};
                                             <span>View Payment</span>
                                         </template>
                                         <a-button><EditFilled /></a-button>
-                                    </a-tooltip>
-                                </div>
-                                <div @click="handleDelete(slotProps.record)">
-                                    <a-tooltip placement="topLeft">
-                                        <template #title>
-                                            <span>Archive</span>
-                                        </template>
-                                        <a-button><RestFilled /></a-button>
                                     </a-tooltip>
                                 </div>
                             </div>
@@ -331,7 +315,10 @@ const handleDecline = () => {};
                     </a-table>
                     <div
                         class="flex justify-end mt-5"
-                        v-if="page.props.auth.role.is_employee"
+                        v-if="
+                            page.props.auth.role.is_employee ||
+                            !page.props.auth.role.is_admin
+                        "
                     >
                         <a-button class="mr-2" @click.prevent="handleDecline"
                             >Decline</a-button

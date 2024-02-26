@@ -362,7 +362,7 @@ const refresh = () => {
                                 :message="form.errors.id_number"
                             />
                         </a-form-item>
-                        <a-form-item required label="Password">
+                        <!-- <a-form-item required label="Password">
                             <a-input
                                 type="password"
                                 v-model:value="form.password"
@@ -383,7 +383,7 @@ const refresh = () => {
                                 class="mt-2"
                                 :message="form.errors.confirmation"
                             />
-                        </a-form-item>
+                        </a-form-item> -->
                     </a-card>
                     <div class="flex justify-end mt-5">
                         <a-button class="mr-2" @click.prevent="handleCancel"

@@ -18,6 +18,7 @@ class HistoryController extends Controller
         $histories = History::query()
             ->whereNotNull('student_id')
             ->whereNot('status', 'pending')
+            ->latest()
             ->paginate($request->per_page);
 
         return Inertia::render('Admin/History/Index', [

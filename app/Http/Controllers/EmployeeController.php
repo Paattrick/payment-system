@@ -51,13 +51,7 @@ class EmployeeController extends Controller
                 'municipality' => 'required|string',
                 'barangay' => 'required|string',
                 'id_number' => 'required|string',
-                'password' => Rule::requiredIf(fn () => $request->isMethod('post')) . '|max:255|same:confirmation',
-                'confirmation' => Rule::requiredIf(fn () => $request->isMethod('post')) . '|same:password',
             ],
-            [
-                'password.same' => 'Password does not match.',
-                'confirmation.same' => 'Password does not match.'
-            ]
         );
     }
 
@@ -67,7 +61,7 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateRequest($request);
-        $encrypted_password = Hash::make($validated['password']);
+        $encrypted_password = Hash::make($validated['id_number']);
 
         User::create(
             [
