@@ -117,6 +117,7 @@ const submit = () => {
         preserveState: true,
         onSuccess: () => {
             showModal.value = false;
+            form.reset();
         },
     });
 };
