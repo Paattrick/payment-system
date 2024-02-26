@@ -115,9 +115,11 @@ const submit = () => {
             fees: form.value,
             student: page.props.auth.user,
             file: file.value,
+            onSucces: () => {
+                showFileModal.value = false;
+            },
         })
     );
-    console.log(meta.value);
 };
 
 const update = () => {
@@ -155,6 +157,7 @@ const refresh = () => {
 
 const onSelectChange = (value) => {
     selectedBillings.value = value;
+    console.log(value);
 };
 
 const proceedPayment = () => {

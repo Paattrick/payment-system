@@ -254,7 +254,7 @@ const viewPayment = (val) => {
                                             new Intl.NumberFormat("PHP", {
                                                 style: "currency",
                                                 currency: "PHP",
-                                            }).format(record.amount)
+                                            }).format(record.toPay)
                                         }}
                                     </template>
                                     <template
