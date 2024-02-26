@@ -20,7 +20,6 @@ class FeesController extends Controller
 
         $fees = Fee::query()
             ->whereNotNull('name')
-            ->latest()
             ->paginate($request->per_page);
 
         return Inertia::render('Admin/Fees/Index', [
