@@ -480,32 +480,6 @@ const refresh = () => {
                                 :message="form.errors.id_number"
                             />
                         </a-form-item>
-                        <a-form-item v-if="isEditing" required label="Password">
-                            <a-input
-                                type="password"
-                                v-model:value="form.password"
-                                placeholder="********"
-                            />
-                            <InputError
-                                class="mt-2"
-                                :message="form.errors.password"
-                            />
-                        </a-form-item>
-                        <a-form-item
-                            v-if="isEditing"
-                            required
-                            label="Confirm Password"
-                        >
-                            <a-input
-                                type="password"
-                                v-model:value="form.confirmation"
-                                placeholder="********"
-                            />
-                            <InputError
-                                class="mt-2"
-                                :message="form.errors.confirmation"
-                            />
-                        </a-form-item>
                     </a-card>
                     <div class="flex justify-end mt-5">
                         <a-button class="mr-2" @click.prevent="handleCancel"
