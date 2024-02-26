@@ -23,7 +23,7 @@ const form = useForm({
     name: null,
     meta: [],
 });
-console.log(page.props.auth.role);
+console.log(page.props.auth.role.is_admin);
 const clearance = ref("");
 const amount = ref(0);
 const toPay = ref(0);
@@ -293,7 +293,11 @@ const viewPayment = (val) => {
                 :footer="null"
             >
                 <div>
-                    <a-table :dataSource="meta" :columns="descriptionColumns">
+                    <a-table
+                        :dataSource="meta"
+                        :columns="descriptionColumns"
+                        :paginationData="null"
+                    >
                         <template #bodyCell="{ column, record, text }">
                             <template v-if="column.dataIndex === 'meta'">
                                 <div v-for="(val, i) in record.meta" :key="i">
@@ -325,7 +329,7 @@ const viewPayment = (val) => {
                     </a-table>
                     <div
                         class="flex justify-end mt-5"
-                        v-if="page.props.auth.role.isStudent"
+                        v-if="page.props.auth.role.is_student"
                     >
                         <a-button class="mr-2" @click.prevent="handleCancel"
                             >Decline</a-button
