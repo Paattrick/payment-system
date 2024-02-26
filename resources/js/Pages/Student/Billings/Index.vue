@@ -17,8 +17,6 @@ const page = usePage();
 const isDisable = ref(false);
 const totalToPay = ref(0);
 
-console.log(page.props.auth.user.meta);
-
 onMounted(() => {
     form.value = { ...props.fees.data };
 });
@@ -120,24 +118,23 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    console.log(form.meta);
-    // router.post(
-    //     route(
-    //         "billings-submit.store",
-    //         {
-    //             fees: form.value,
-    //             student: page.props.auth.user,
-    //             file: file.value,
-    //         },
-    //         {
-    //             onStart: () => (submitLoading.value = true),
-    //             onFinish: () => (submitLoading.value = false),
-    //             onSuccess: () => {
-    //                 showFileModal.value = false;
-    //             },
-    //         }
-    //     )
-    // );
+    router.post(
+        route(
+            "billings-submit.store",
+            {
+                fees: form.value,
+                student: page.props.auth.user,
+                file: file.value,
+            },
+            {
+                onStart: () => (submitLoading.value = true),
+                onFinish: () => (submitLoading.value = false),
+                onSuccess: () => {
+                    showFileModal.value = false;
+                },
+            }
+        )
+    );
 };
 
 const update = () => {
