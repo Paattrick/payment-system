@@ -18,7 +18,6 @@ class UserStudentController extends Controller
 
         $fees = Fee::query()
             ->whereNotNull('name')
-            ->latest()
             ->paginate($request->per_page);
 
         return Inertia::render('Student/Billings/Index', [
