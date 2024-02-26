@@ -55,7 +55,7 @@ const descriptionColumns = ref([
         align: "center",
     },
     {
-        title: "Amount",
+        title: "To Pay",
         dataIndex: "amount",
         key: "amount",
         align: "center",
