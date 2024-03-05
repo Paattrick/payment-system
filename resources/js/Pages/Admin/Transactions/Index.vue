@@ -285,7 +285,7 @@ const handleDecline = () => {
                     <a-table
                         :dataSource="meta"
                         :columns="descriptionColumns"
-                        :paginationData="null"
+                        :pagination="false"
                     >
                         <template #bodyCell="{ column, record, text }">
                             <template v-if="column.dataIndex === 'meta'">

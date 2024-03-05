@@ -68,4 +68,16 @@ class UserStudentController extends Controller
 
         return redirect()->back();
     }
+
+    public function payments(Request $request)
+    {
+        $fees = Fee::query()
+            ->whereNotNull('name')
+            ->get();
+
+        return Inertia::render('Student/Billings/Payments/Index', [
+            'selectedBillings' => $request->selectedBillings,
+            'fees' => FeeResource::collection($fees)
+        ]);
+    }
 }

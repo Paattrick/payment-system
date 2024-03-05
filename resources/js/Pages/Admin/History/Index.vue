@@ -16,7 +16,7 @@ const [modal] = Modal.useModal();
 const props = defineProps({
     histories: Object,
 });
-console.log(props.histories);
+
 const form = useForm({
     name: null,
     meta: [],

@@ -44,10 +44,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::group(['prefix' => 'admin', 'middleware' => 'role:admin'], function () {
-        Route::resource('/students', StudentController::class);
+
         Route::resource('/employees', EmployeeController::class);
         Route::resource('/fees', FeesController::class);
         Route::resource('/archives', ArchiveController::class);
+        Route::resource('/students', StudentController::class);
 
         Route::put('/students/{student}/archive', [StudentController::class, 'archive'])->name('student.archive');
         Route::put('/students/{student}/archive-restore', [StudentController::class, 'archiveRestore'])->name('student.archive-restore');
@@ -55,15 +56,18 @@ Route::middleware('auth')->group(function () {
         // Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
     });
 
-    Route::group(['prefix' => 'student', 'middleware' => 'role:student'], function () {
+
+    Route::group(['prefix' => 'student', 'middleware' => 'role:employee'], function () {
         Route::get('/billings', [UserStudentController::class, 'index'])->name('billings.index');
         Route::post('/billings/submit', [UserStudentController::class, 'submitFees'])->name('billings-submit.store');
+
+        Route::post('/billings/payments', [UserStudentController::class, 'payments'])->name('payments.index');
         // Route::resource('/employees', EmployeeController::class);
 
         // Route::get('/students-filter', [StudentController::class, 'filterStudent'])->name('students-filter.index');
     });
 
-    Route::group(['prefix' => 'student', 'middleware' => 'role:collector'], function () {
+    Route::group(['prefix' => 'collector', 'middleware' => 'role:collector'], function () {
         // Route::post('/billings/{student}/submit-payment', [UserStudentController::class, 'submitPayment'])->name('submit-payment.store');
         // Route::resource('/employees', EmployeeController::class);
 

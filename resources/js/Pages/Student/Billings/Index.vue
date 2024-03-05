@@ -10,15 +10,16 @@ const [modal] = Modal.useModal();
 const props = defineProps({
     fees: Object,
 });
-
+console.log(props.fees.data);
 const form = useForm({});
 const page = usePage();
 
 const isDisable = ref(false);
 const totalToPay = ref(0);
+const tempData = ref({});
 
 onMounted(() => {
-    form.value = { ...props.fees.data };
+    // form.value = { ...props.fees.data };
 });
 
 const columns = ref([
@@ -76,36 +77,19 @@ const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
 const selectedBillings = ref({});
-const selectedBillingsDisabled = ref(false);
-const meta = ref({});
 const sum = ref(0);
 const showQr = ref(false);
 const showFileModal = ref(false);
 const file = ref(null);
 const submitLoading = ref(false);
-
-const handleAdd = () => {
-    showModal.value = true;
-    isEditing.value = false;
-};
+const showBillingModal = ref(false);
+const meta = ref({});
+const collectionName = ref(null);
 
 const handleCancel = () => {
     form.reset();
     form.errors = {};
     showModal.value = false;
-};
-
-const addField = () => {
-    form.meta.push({
-        clearance: clearance.value,
-        amount: amount.value,
-    });
-    clearance.value = null;
-    amount.value = 0;
-};
-
-const removeField = (index) => {
-    form.meta.splice(index, 1);
 };
 
 const handleEdit = (val) => {
@@ -132,16 +116,6 @@ const submit = () => {
             },
         }
     );
-};
-
-const update = () => {
-    form.put(route("employees.update", form.id), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            showModal.value = false;
-        },
-    });
 };
 
 const handlePay = (event, index) => {
@@ -191,6 +165,18 @@ const uploadFile = () => {
     showQr.value = false;
     showFileModal.value = true;
 };
+
+const redirectToPayments = () => {
+    router.post(
+        route("payments.index", {
+            selectedBillings: selectedBillings.value,
+        })
+    );
+};
+
+const payBillings = () => {
+    showBillingModal.value = true;
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -210,10 +196,8 @@ const uploadFile = () => {
                                 <a-button @click="refresh()">Refresh</a-button>
                             </div>
                             <div class="flex justify-end">
-                                <a-button
-                                    type="primary"
-                                    @click="proceedPayment()"
-                                    >Pay Selected Billings</a-button
+                                <a-button type="primary" @click="payBillings()"
+                                    >Pay Billings</a-button
                                 >
                             </div>
                         </div>
@@ -266,11 +250,7 @@ const uploadFile = () => {
                                                 new Intl.NumberFormat("PHP", {
                                                     style: "currency",
                                                     currency: "PHP",
-                                                }).format(
-                                                    val.balance === "0"
-                                                        ? val.amount
-                                                        : val.balance
-                                                )
+                                                }).format(val.balance)
                                             }}
                                         </li>
                                     </ul>
@@ -387,6 +367,64 @@ const uploadFile = () => {
                     </div>
                 </a-modal>
             </div>
+            <a-modal v-model:open="showBillingModal" title="Billings">
+                <a-form layout="vertical">
+                    <a-form-item label="Select Collection">
+                        <a-select
+                            v-model:value="collectionName"
+                            class="w-full"
+                            :options="
+                                props.fees.data.map((item) => ({
+                                    value: item.id,
+                                    label: item.name,
+                                }))
+                            "
+                            :filter-option="
+                                (input, option) =>
+                                    option.label
+                                        .toLowerCase()
+                                        .indexOf(input.toLowerCase()) >= 0
+                            "
+                        >
+                        </a-select>
+                    </a-form-item>
+                    <a-card>
+                        <a-table
+                            :columns="descriptionColumns"
+                            :dataSource="props.fees.data[collectionName].meta"
+                            :pagination="false"
+                            class="shadow-xl mb-4"
+                            bordered
+                        >
+                            <template
+                                #bodyCell="{ column, record, text, index }"
+                            >
+                                <template v-if="column.dataIndex === 'meta'">
+                                    {{ record.clearance }}
+                                </template>
+                                <template v-if="column.dataIndex === 'amount'">
+                                    {{
+                                        new Intl.NumberFormat("PHP", {
+                                            style: "currency",
+                                            currency: "PHP",
+                                        }).format(record.amount)
+                                    }}
+                                </template>
+                                <template v-if="column.dataIndex === 'actions'">
+                                    <a-input-number
+                                        placeholder="0.00"
+                                        :step="0.01"
+                                        class="w-full"
+                                        name="to_pay"
+                                        @change="handlePay($event, index)"
+                                    >
+                                    </a-input-number>
+                                </template>
+                            </template>
+                        </a-table>
+                    </a-card>
+                </a-form>
+            </a-modal>
         </div>
     </AuthenticatedLayout>
 </template>
