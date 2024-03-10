@@ -282,22 +282,7 @@ const handleDecline = () => {
                 :footer="null"
             >
                 <div>
-                    <div v-for="(val, index) in meta" class="">
-                        <div v-for="(x, i) in val.meta" class="flex space-x-8">
-                            <a-card>
-                                <div v-if="x.toPay != 0">
-                                    <div>
-                                        <span> Name: {{ val.name }} </span>
-                                    </div>
-                                    <div>Specific: {{ x.clearance }}</div>
-                                    <div>Total Amount: {{ x.amount }}</div>
-                                    <div>To Pay: {{ x.toPay }}</div>
-                                </div>
-                            </a-card>
-                        </div>
-                    </div>
-
-                    <!-- <a-table
+                    <a-table
                         :dataSource="meta"
                         :columns="descriptionColumns"
                         :pagination="false"
@@ -306,7 +291,7 @@ const handleDecline = () => {
                             <template v-if="column.dataIndex === 'meta'">
                                 <div v-for="(val, i) in record.meta" :key="i">
                                     <div v-if="val.toPay !== '0'" class="mb-2">
-                                        {{ val.clearance }} {{ record }}
+                                        {{ val.clearance }}
                                     </div>
                                 </div>
                             </template>
@@ -330,7 +315,7 @@ const handleDecline = () => {
                                 </div>
                             </template>
                         </template>
-                    </a-table> -->
+                    </a-table>
                     <div
                         class="flex justify-end mt-5"
                         v-if="

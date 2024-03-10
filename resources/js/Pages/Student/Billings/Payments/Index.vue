@@ -11,8 +11,6 @@ const props = defineProps({
     selectedBillings: Object,
     fees: Object,
 });
-
-console.log(props.selectedBillings);
 </script>
 <template>
     <AuthenticatedLayout>

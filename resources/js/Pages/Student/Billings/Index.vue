@@ -10,16 +10,22 @@ const [modal] = Modal.useModal();
 const props = defineProps({
     fees: Object,
 });
-console.log(props.fees.data);
+
 const form = useForm({});
 const page = usePage();
-
 const isDisable = ref(false);
 const totalToPay = ref(0);
-const tempData = ref({});
+const tableData = ref([]);
+const toPay = ref([]);
 
 onMounted(() => {
-    // form.value = { ...props.fees.data };
+    console.log(page.props.auth.user.meta);
+    console.log(props.fees.data);
+    if (page.props.auth.user.meta === null) {
+        tableData.value = props.fees.data;
+    } else {
+        tableData.value = page.props.auth.user.meta;
+    }
 });
 
 const columns = ref([
@@ -42,13 +48,6 @@ const columns = ref([
         title: "Balance",
         dataIndex: "balance",
         key: "balance",
-        align: "center",
-    },
-    {
-        title: "Actions",
-        dataIndex: "actions",
-        key: "actions",
-        width: 8,
     },
 ]);
 
@@ -65,26 +64,16 @@ const descriptionColumns = ref([
         key: "amount",
         align: "center",
     },
-    {
-        title: "Amount To Pay",
-        dataIndex: "actions",
-        key: "actions",
-        align: "center",
-    },
 ]);
 
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
 const selectedBillings = ref({});
-const sum = ref(0);
 const showQr = ref(false);
 const showFileModal = ref(false);
 const file = ref(null);
 const submitLoading = ref(false);
-const showBillingModal = ref(false);
-const meta = ref({});
-const collectionName = ref(null);
 
 const handleCancel = () => {
     form.reset();
@@ -104,7 +93,7 @@ const handleEdit = (val) => {
 const submit = () => {
     router.post(
         route("billings-submit.store", {
-            fees: form.value,
+            fees: toPay.value,
             student: page.props.auth.user,
             file: file.value,
         }),
@@ -113,21 +102,10 @@ const submit = () => {
             onFinish: () => (submitLoading.value = false),
             onSuccess: () => {
                 showFileModal.value = false;
+                refresh();
             },
         }
     );
-};
-
-const handlePay = (event, index) => {
-    totalToPay.value = 0;
-    if (Number(event) > Number(form.meta[index].amount)) {
-        message.error("Amount to Pay must not exceed the exact amount");
-        isDisable.value = true;
-    } else {
-        form.meta[index].balance =
-            Number(form.meta[index].amount) - Number(event);
-        isDisable.value = false;
-    }
 };
 
 const refresh = () => {
@@ -143,22 +121,12 @@ const refresh = () => {
 
 const onSelectChange = (value) => {
     selectedBillings.value = value;
-};
-
-const proceedPayment = () => {
-    const total = [];
-    if (form.meta !== undefined) {
-        form.meta.forEach((element) => {
-            total.push(Number(element.toPay));
-        });
+    if (selectedBillings.value.length > 0) {
+        isDisable.value = true;
+        toPay.value = [];
+    } else {
+        isDisable.value = false;
     }
-
-    // iterate over each item in the array
-    for (let i = 0; i < total.length; i++) {
-        sum.value += total[i];
-    }
-
-    showQr.value = true;
 };
 
 const uploadFile = () => {
@@ -166,16 +134,24 @@ const uploadFile = () => {
     showFileModal.value = true;
 };
 
-const redirectToPayments = () => {
-    router.post(
-        route("payments.index", {
-            selectedBillings: selectedBillings.value,
-        })
-    );
+const payBillings = () => {
+    props.fees.data.map((e) => {
+        selectedBillings.value.map((x) => {
+            if (e.id == x) {
+                toPay.value.push({
+                    id: e.id,
+                    name: e.name,
+                    meta: e.meta,
+                });
+            }
+        });
+    });
+
+    showModal.value = true;
 };
 
-const payBillings = () => {
-    showBillingModal.value = true;
+const handlePayment = () => {
+    showQr.value = true;
 };
 </script>
 <template>
@@ -184,7 +160,7 @@ const payBillings = () => {
             <div class="page-title height-md:mb-30">Billings</div>
             <div>
                 <TableComponent
-                    :dataSource="page.props.auth.user.meta"
+                    :dataSource="tableData"
                     :columns="columns"
                     :isLoading="loading"
                     :hasRowSelection="true"
@@ -196,8 +172,11 @@ const payBillings = () => {
                                 <a-button @click="refresh()">Refresh</a-button>
                             </div>
                             <div class="flex justify-end">
-                                <a-button type="primary" @click="payBillings()"
-                                    >Pay Billings</a-button
+                                <a-button
+                                    :disabled="!isDisable"
+                                    type="primary"
+                                    @click="payBillings()"
+                                    >Pay Selected Billings</a-button
                                 >
                             </div>
                         </div>
@@ -243,14 +222,27 @@ const payBillings = () => {
                                 v-for="(val, i) in slotProps.record.meta"
                                 :key="i"
                             >
-                                <div class="mb-2">
+                                <div
+                                    class="mb-2"
+                                    v-if="val.amount - val.toPay == 0"
+                                >
+                                    <a-tag
+                                        class="font-semibold capitalize"
+                                        color="#86EFAC"
+                                    >
+                                        paid
+                                    </a-tag>
+                                </div>
+                                <div v-else>
                                     <ul class="list-disc">
                                         <li>
                                             {{
                                                 new Intl.NumberFormat("PHP", {
                                                     style: "currency",
                                                     currency: "PHP",
-                                                }).format(val.balance)
+                                                }).format(
+                                                    val.amount - val.toPay
+                                                )
                                             }}
                                         </li>
                                     </ul>
@@ -284,42 +276,65 @@ const payBillings = () => {
                 <div>
                     <a-table
                         :columns="descriptionColumns"
-                        :dataSource="form.meta"
+                        :dataSource="toPay"
                         :pagination="false"
                         class="shadow-xl mb-4"
                         bordered
                     >
                         <template #bodyCell="{ column, record, text, index }">
                             <template v-if="column.dataIndex === 'meta'">
-                                {{ record.clearance }}
+                                {{ record.name }}
                             </template>
                             <template v-if="column.dataIndex === 'amount'">
-                                {{
-                                    new Intl.NumberFormat("PHP", {
-                                        style: "currency",
-                                        currency: "PHP",
-                                    }).format(record.amount)
-                                }}
-                            </template>
-                            <template v-if="column.dataIndex === 'actions'">
-                                <a-input-number
-                                    placeholder="0.00"
-                                    :step="0.01"
-                                    class="w-full"
-                                    name="to_pay"
-                                    @change="handlePay($event, index)"
+                                <div
+                                    v-for="(val, i) in record.meta"
+                                    :index="i"
+                                    class="flex justify-between mb-2 w-full"
                                 >
-                                </a-input-number>
+                                    <div class="pt-2">
+                                        {{ val.clearance }}
+                                    </div>
+                                    <div class="flex space-x-4">
+                                        <div class="pt-2">
+                                            {{
+                                                new Intl.NumberFormat("PHP", {
+                                                    style: "currency",
+                                                    currency: "PHP",
+                                                }).format(val.amount)
+                                            }}
+                                        </div>
+                                        <div
+                                            class="mb-2"
+                                            v-if="val.amount - val.toPay == 0"
+                                        >
+                                            <a-tag
+                                                class="font-semibold capitalize"
+                                                color="#86EFAC"
+                                            >
+                                                paid
+                                            </a-tag>
+                                        </div>
+                                        <div v-else>
+                                            <a-input-number
+                                                placeholder="0.00"
+                                                :step="0.01"
+                                                class="w-full"
+                                                name="to_pay"
+                                                @change="
+                                                    handlePay($event, index)
+                                                "
+                                                v-model:value="val.toPay"
+                                            >
+                                            </a-input-number>
+                                        </div>
+                                    </div>
+                                </div>
                             </template>
                         </template>
                     </a-table>
                 </div>
                 <div class="flex justify-end">
-                    <a-button
-                        @click="showModal = false"
-                        type="primary"
-                        :disabled="isDisable"
-                    >
+                    <a-button @click="handlePayment()" type="primary">
                         Okay
                     </a-button>
                 </div>
@@ -367,64 +382,6 @@ const payBillings = () => {
                     </div>
                 </a-modal>
             </div>
-            <a-modal v-model:open="showBillingModal" title="Billings">
-                <a-form layout="vertical">
-                    <a-form-item label="Select Collection">
-                        <a-select
-                            v-model:value="collectionName"
-                            class="w-full"
-                            :options="
-                                props.fees.data.map((item) => ({
-                                    value: item.id,
-                                    label: item.name,
-                                }))
-                            "
-                            :filter-option="
-                                (input, option) =>
-                                    option.label
-                                        .toLowerCase()
-                                        .indexOf(input.toLowerCase()) >= 0
-                            "
-                        >
-                        </a-select>
-                    </a-form-item>
-                    <a-card>
-                        <a-table
-                            :columns="descriptionColumns"
-                            :dataSource="props.fees.data[collectionName].meta"
-                            :pagination="false"
-                            class="shadow-xl mb-4"
-                            bordered
-                        >
-                            <template
-                                #bodyCell="{ column, record, text, index }"
-                            >
-                                <template v-if="column.dataIndex === 'meta'">
-                                    {{ record.clearance }}
-                                </template>
-                                <template v-if="column.dataIndex === 'amount'">
-                                    {{
-                                        new Intl.NumberFormat("PHP", {
-                                            style: "currency",
-                                            currency: "PHP",
-                                        }).format(record.amount)
-                                    }}
-                                </template>
-                                <template v-if="column.dataIndex === 'actions'">
-                                    <a-input-number
-                                        placeholder="0.00"
-                                        :step="0.01"
-                                        class="w-full"
-                                        name="to_pay"
-                                        @change="handlePay($event, index)"
-                                    >
-                                    </a-input-number>
-                                </template>
-                            </template>
-                        </a-table>
-                    </a-card>
-                </a-form>
-            </a-modal>
         </div>
     </AuthenticatedLayout>
 </template>

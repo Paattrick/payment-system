@@ -1,9 +1,9 @@
 <script setup>
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import InputError from "@/Components/InputError.vue";
+import InputLabel from "@/Components/InputLabel.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import TextInput from "@/Components/TextInput.vue";
+import { Link, useForm, usePage } from "@inertiajs/vue3";
 
 defineProps({
     mustVerifyEmail: {
@@ -25,22 +25,27 @@ const form = useForm({
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">Profile Information</h2>
+            <h2 class="text-lg font-medium text-gray-900">
+                Profile Information
+            </h2>
 
             <p class="mt-1 text-sm text-gray-600">
                 Update your account's profile information and email address.
             </p>
         </header>
 
-        <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
+        <form
+            @submit.prevent="form.patch(route('profile.update'))"
+            class="mt-6 space-y-6"
+        >
             <div>
                 <InputLabel for="name" value="Name" />
 
-                <TextInput
+                <a-input
                     id="name"
                     type="text"
                     class="mt-1 block w-full"
-                    v-model="form.name"
+                    v-model:value="form.name"
                     required
                     autofocus
                     autocomplete="name"
@@ -52,11 +57,11 @@ const form = useForm({
             <div>
                 <InputLabel for="email" value="Email" />
 
-                <TextInput
+                <a-input
                     id="email"
                     type="email"
                     class="mt-1 block w-full"
-                    v-model="form.email"
+                    v-model:value="form.email"
                     required
                     autocomplete="username"
                 />
@@ -94,7 +99,12 @@ const form = useForm({
                     leave-active-class="transition ease-in-out"
                     leave-to-class="opacity-0"
                 >
-                    <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">Saved.</p>
+                    <p
+                        v-if="form.recentlySuccessful"
+                        class="text-sm text-gray-600"
+                    >
+                        Saved.
+                    </p>
                 </Transition>
             </div>
         </form>

@@ -7,18 +7,16 @@ import {
     ExclamationCircleFilled,
     RestFilled,
 } from "@ant-design/icons-vue";
-import { useForm, router, usePage } from "@inertiajs/vue3";
+import { useForm, router } from "@inertiajs/vue3";
 import { Modal, message } from "ant-design-vue";
 import { h, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
-    transactions: Object,
+    histories: Object,
 });
-
-const page = usePage();
-
+console.log(props.histories);
 const form = useForm({
     name: null,
     meta: [],
@@ -28,7 +26,6 @@ const clearance = ref("");
 const amount = ref(0);
 const toPay = ref(0);
 const balance = ref(0);
-const selectedStudentId = ref(null);
 
 const columns = ref([
     {
@@ -42,10 +39,9 @@ const columns = ref([
         key: "message",
     },
     {
-        title: "Actions",
-        dataIndex: "actions",
-        key: "actions",
-        width: 8,
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
     },
 ]);
 
@@ -57,19 +53,22 @@ const descriptionColumns = ref([
         align: "center",
     },
     {
-        title: "To Pay",
+        title: "Amount",
         dataIndex: "amount",
         key: "amount",
         align: "center",
+    },
+    {
+        title: "Actions",
+        dataIndex: "actions",
+        key: "actions",
+        width: 8,
     },
 ]);
 
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
-const showPaymentModal = ref(false);
-const meta = ref(null);
-const transactionId = ref(null);
 
 const handleAdd = () => {
     showModal.value = true;
@@ -107,20 +106,36 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    router.post(
-        route("submit-payment.store", selectedStudentId.value),
-        {
-            meta: meta.value,
-            transactionId: transactionId.value,
+    form.post(route("fees.store"), {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            showModal.value = false;
         },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                showPaymentModal.value = false;
-            },
-        }
-    );
+    });
+};
+
+const update = () => {
+    form.put(route("fees.update", form.id), {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            showModal.value = false;
+        },
+    });
+};
+
+const handleDelete = (val) => {
+    Modal.confirm({
+        title: "Are you sure to delete this Payment?",
+        icon: h(ExclamationCircleFilled),
+        okText: "OK",
+        onOk() {
+            router.delete(route("fees.destroy", val.id));
+            message.success("Successfully Deleted!");
+        },
+        cancelText: "Cancel",
+    });
 };
 
 const refresh = () => {
@@ -133,39 +148,15 @@ const refresh = () => {
         },
     });
 };
-
-const viewPayment = (val) => {
-    meta.value = val.meta;
-    showPaymentModal.value = true;
-    selectedStudentId.value = val.student_id;
-    transactionId.value = val.id;
-};
-
-const handleDecline = () => {
-    router.post(
-        route("decline-payment.store", selectedStudentId.value),
-        {
-            meta: meta.value,
-            transactionId: transactionId.value,
-        },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                showPaymentModal.value = false;
-            },
-        }
-    );
-};
 </script>
 <template>
     <AuthenticatedLayout>
         <div>
-            <div class="page-title height-md:mb-30">Transactions</div>
+            <div class="page-title height-md:mb-30">History</div>
 
             <div>
                 <TableComponent
-                    :dataSource="props.transactions.data"
+                    :dataSource="props.histories.data"
                     :columns="columns"
                     :isLoading="loading"
                 >
@@ -184,13 +175,38 @@ const handleDecline = () => {
                             {{ "Submitted a Payment" }}
                         </template>
                         <template
+                            v-if="slotProps.column.dataIndex === 'status'"
+                        >
+                            <div v-if="slotProps.record.status === 'accepted'">
+                                <a-tag
+                                    class="font-semibold capitalize"
+                                    color="#86EFAC"
+                                >
+                                    {{ slotProps.record.status }}
+                                </a-tag>
+                            </div>
+                            <div v-if="slotProps.record.status === 'declined'">
+                                <a-tag
+                                    class="font-semibold capitalize"
+                                    color="#f50"
+                                >
+                                    {{ slotProps.record.status }}
+                                </a-tag>
+                            </div>
+                            <div v-if="slotProps.record.status === 'pending'">
+                                <a-tag
+                                    class="font-semibold capitalize"
+                                    color="#d97706"
+                                >
+                                    {{ slotProps.record.status }}
+                                </a-tag>
+                            </div>
+                        </template>
+                        <!-- <template
                             v-if="slotProps.column.dataIndex === 'actions'"
                         >
-                            <div
-                                v-if="!page.props.auth.role.is_student"
-                                class="flex space-x-4"
-                            >
-                                <div @click="viewPayment(slotProps.record)">
+                            <div class="flex space-x-4">
+                                <div @click="handleEdit(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
                                             <span>View Payment</span>
@@ -198,8 +214,16 @@ const handleDecline = () => {
                                         <a-button><EditFilled /></a-button>
                                     </a-tooltip>
                                 </div>
+                                <div @click="handleDelete(slotProps.record)">
+                                    <a-tooltip placement="topLeft">
+                                        <template #title>
+                                            <span>Archive</span>
+                                        </template>
+                                        <a-button><RestFilled /></a-button>
+                                    </a-tooltip>
+                                </div>
                             </div>
-                        </template>
+                        </template> -->
                     </template>
                 </TableComponent>
             </div>
@@ -275,80 +299,6 @@ const handleDecline = () => {
                         >
                     </div>
                 </a-form>
-            </a-modal>
-            <a-modal
-                v-model:open="showPaymentModal"
-                title="Payment"
-                :footer="null"
-            >
-                <div>
-                    <div v-for="(val, index) in meta" class="">
-                        <div v-for="(x, i) in val.meta" class="flex space-x-8">
-                            <a-card>
-                                <div v-if="x.toPay != 0">
-                                    <div>
-                                        <span> Name: {{ val.name }} </span>
-                                    </div>
-                                    <div>Specific: {{ x.clearance }}</div>
-                                    <div>Total Amount: {{ x.amount }}</div>
-                                    <div>To Pay: {{ x.toPay }}</div>
-                                </div>
-                            </a-card>
-                        </div>
-                    </div>
-
-                    <!-- <a-table
-                        :dataSource="meta"
-                        :columns="descriptionColumns"
-                        :pagination="false"
-                    >
-                        <template #bodyCell="{ column, record, text }">
-                            <template v-if="column.dataIndex === 'meta'">
-                                <div v-for="(val, i) in record.meta" :key="i">
-                                    <div v-if="val.toPay !== '0'" class="mb-2">
-                                        {{ val.clearance }} {{ record }}
-                                    </div>
-                                </div>
-                            </template>
-                            <template v-if="column.dataIndex === 'amount'">
-                                <div v-for="(val, i) in record.meta" :key="i">
-                                    <div class="mb-2" v-if="val.toPay !== '0'">
-                                        <ul class="list-disc">
-                                            <li>
-                                                {{
-                                                    new Intl.NumberFormat(
-                                                        "PHP",
-                                                        {
-                                                            style: "currency",
-                                                            currency: "PHP",
-                                                        }
-                                                    ).format(val.toPay)
-                                                }}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </template>
-                        </template>
-                    </a-table> -->
-                    <div
-                        class="flex justify-end mt-5"
-                        v-if="
-                            page.props.auth.role.is_employee ||
-                            !page.props.auth.role.is_admin
-                        "
-                    >
-                        <a-button class="mr-2" @click.prevent="handleDecline"
-                            >Decline</a-button
-                        >
-                        <a-button
-                            type="primary"
-                            :loading="form.processing"
-                            @click.prevent="submit()"
-                            >Accept</a-button
-                        >
-                    </div>
-                </div>
             </a-modal>
         </div>
     </AuthenticatedLayout>
