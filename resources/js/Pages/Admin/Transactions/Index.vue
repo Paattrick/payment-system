@@ -113,31 +113,6 @@ const submit = () => {
             if (meta.amount == 0) {
                 meta.balance = "PAID";
             }
-            // if (Number(meta.balance) == 0) {
-            //     if (Number(meta.toPay) > 0) {
-            //         if (Number(meta.amount) - Number(meta.toPay) == 0) {
-            //             meta.balance = "PAID";
-            //         } else {
-            //             meta.balance = Number(meta.amount) - Number(meta.toPay);
-            //         }
-            //         meta.balance = Number(meta.amount) - Number(meta.toPay);
-            //     }
-            // }
-            // if (Number(meta.balance) > 0) {
-            //     meta.balance = Number(meta.balance) - Number(meta.toPay);
-            // }
-
-            // if (meta.balance !== "PAID" || Number(meta.balance) > 0) {
-            //     meta.balance = Number(meta.balance) - Number(meta.toPay);
-            // }
-            // if (Number(meta.amount) - Number(meta.toPay) == 0) {
-            //     meta.balance = "PAID";
-            // } else {
-            //     meta.balance =
-            //         Number(meta.amount) - Number(meta.toPay) == 0
-            //             ? "PAID"
-            //             : Number(meta.amount) - Number(meta.toPay);
-            // }
         });
     });
     router.post(
@@ -318,7 +293,9 @@ const handleDecline = () => {
                     <div v-for="(val, index) in meta" class="">
                         <div v-for="(x, i) in val.meta" class="flex space-x-8">
                             <a-card>
-                                <div v-if="x.toPay != 0">
+                                <div
+                                    v-if="x.toPay != 0 && x.balance !== 'PAID'"
+                                >
                                     <div>
                                         <span> Name: {{ val.name }} </span>
                                     </div>

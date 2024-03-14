@@ -113,9 +113,39 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
+    const temp = [];
+    if (page.props.auth.user.meta !== null) {
+        temp = page.props.auth.user.meta;
+        toPay.value.map((e) => {
+            e.meta.map((data) => {
+                page.props.auth.user.meta.map((x) => {
+                    x.meta.map((meta) => {
+                        if (data.clearance == meta.clearance) {
+                            if (meta.balance == "PAID") {
+                                if (data.toPay > 0) {
+                                    return message.error(
+                                        `${meta.clearance} is already paid`
+                                    );
+                                }
+                            } else {
+                                data.balance =
+                                    Number(meta.balance) - Number(data.toPay);
+                            }
+                        }
+                        temp.push({
+                            id: x.id,
+                            name: x.name,
+                            meta: x.meta,
+                        });
+                    });
+                });
+            });
+        });
+    }
+
     router.post(
         route("billings-submit.store", {
-            fees: toPay.value,
+            fees: temp,
             student: page.props.auth.user,
             file: file.value,
         })
@@ -168,6 +198,19 @@ const payBillings = () => {
 };
 
 const handlePayment = () => {
+    const temp = [];
+    toPay.value.map((e) => {
+        e.meta.map((meta) => {
+            if (meta.toPay != 0) {
+                temp.push({
+                    id: e.id,
+                    name: e.name,
+                    meta: e.meta,
+                });
+            }
+        });
+    });
+    toPay.value = temp;
     showQr.value = true;
 };
 
