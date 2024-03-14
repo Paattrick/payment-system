@@ -109,12 +109,13 @@ const handleEdit = (val) => {
 const submit = () => {
     meta.value.map((e) => {
         e.meta.map((meta) => {
-            meta.balance =
-                Number(meta.amount) - Number(meta.toPay) == 0
-                    ? "PAID"
-                    : Number(meta.amount) - Number(meta.toPay);
             if (meta.balance !== "PAID" && meta.balance != 0) {
                 meta.balance = Number(meta.balance) - Number(meta.toPay);
+            } else {
+                meta.balance =
+                    Number(meta.amount) - Number(meta.toPay) == 0
+                        ? "PAID"
+                        : Number(meta.amount) - Number(meta.toPay);
             }
         });
     });
