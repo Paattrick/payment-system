@@ -113,6 +113,9 @@ const submit = () => {
                 Number(meta.amount) - Number(meta.toPay) == 0
                     ? "PAID"
                     : Number(meta.amount) - Number(meta.toPay);
+            if (meta.balance !== "PAID" && meta.balance != 0) {
+                meta.balance = Number(meta.balance) - Number(meta.toPay);
+            }
         });
     });
     router.post(
