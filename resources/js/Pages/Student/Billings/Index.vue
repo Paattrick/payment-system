@@ -203,6 +203,8 @@ const handlePayment = () => {
                 });
             });
         });
+    } else {
+        showQr.value = true;
     }
 };
 
