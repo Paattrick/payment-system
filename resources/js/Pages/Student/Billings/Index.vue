@@ -19,8 +19,6 @@ const tableData = ref([]);
 const toPay = ref([]);
 
 onMounted(() => {
-    console.log(page.props.auth.user.meta);
-    console.log(props.fees.data);
     if (page.props.auth.user.meta === null) {
         tableData.value = props.fees.data;
     } else {
@@ -69,7 +67,7 @@ const descriptionColumns = ref([
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
-const selectedBillings = ref({});
+const selectedBillings = ref([]);
 const showQr = ref(false);
 const showFileModal = ref(false);
 const file = ref(null);
@@ -127,14 +125,7 @@ const onSelectChange = (value) => {
     } else {
         isDisable.value = false;
     }
-};
 
-const uploadFile = () => {
-    showQr.value = false;
-    showFileModal.value = true;
-};
-
-const payBillings = () => {
     props.fees.data.map((e) => {
         selectedBillings.value.map((x) => {
             if (e.id == x) {
@@ -146,12 +137,23 @@ const payBillings = () => {
             }
         });
     });
+};
 
+const uploadFile = () => {
+    showQr.value = false;
+    showFileModal.value = true;
+};
+
+const payBillings = () => {
     showModal.value = true;
 };
 
 const handlePayment = () => {
     showQr.value = true;
+};
+
+const handlePay = (event, index) => {
+    console.log(index);
 };
 </script>
 <template>
@@ -222,18 +224,7 @@ const handlePayment = () => {
                                 v-for="(val, i) in slotProps.record.meta"
                                 :key="i"
                             >
-                                <div
-                                    class="mb-2"
-                                    v-if="val.amount - val.toPay == 0"
-                                >
-                                    <a-tag
-                                        class="font-semibold capitalize"
-                                        color="#86EFAC"
-                                    >
-                                        paid
-                                    </a-tag>
-                                </div>
-                                <div v-else>
+                                <div>
                                     <ul class="list-disc">
                                         <li>
                                             {{
@@ -303,26 +294,13 @@ const handlePayment = () => {
                                                 }).format(val.amount)
                                             }}
                                         </div>
-                                        <div
-                                            class="mb-2"
-                                            v-if="val.amount - val.toPay == 0"
-                                        >
-                                            <a-tag
-                                                class="font-semibold capitalize"
-                                                color="#86EFAC"
-                                            >
-                                                paid
-                                            </a-tag>
-                                        </div>
-                                        <div v-else>
+                                        <div>
                                             <a-input-number
                                                 placeholder="0.00"
                                                 :step="0.01"
                                                 class="w-full"
                                                 name="to_pay"
-                                                @change="
-                                                    handlePay($event, index)
-                                                "
+                                                @change="handlePay($event, i)"
                                                 v-model:value="val.toPay"
                                             >
                                             </a-input-number>
