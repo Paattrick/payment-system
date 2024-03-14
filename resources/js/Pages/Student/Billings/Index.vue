@@ -113,9 +113,7 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    const temp = [];
     if (page.props.auth.user.meta !== null) {
-        temp = page.props.auth.user.meta;
         toPay.value.map((e) => {
             e.meta.map((data) => {
                 page.props.auth.user.meta.map((x) => {
@@ -132,11 +130,6 @@ const submit = () => {
                                     Number(meta.balance) - Number(data.toPay);
                             }
                         }
-                        temp.push({
-                            id: x.id,
-                            name: x.name,
-                            meta: x.meta,
-                        });
                     });
                 });
             });
@@ -145,7 +138,7 @@ const submit = () => {
 
     router.post(
         route("billings-submit.store", {
-            fees: temp,
+            fees: toPay.value,
             student: page.props.auth.user,
             file: file.value,
         })
