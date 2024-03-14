@@ -113,29 +113,6 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    if (page.props.auth.user.meta !== null) {
-        toPay.value.map((e) => {
-            e.meta.map((data) => {
-                page.props.auth.user.meta.map((x) => {
-                    x.meta.map((meta) => {
-                        if (data.clearance == meta.clearance) {
-                            if (meta.balance == "PAID") {
-                                if (data.toPay > 0) {
-                                    return message.error(
-                                        `${meta.clearance} is already paid`
-                                    );
-                                }
-                            } else {
-                                data.balance =
-                                    Number(meta.balance) - Number(data.toPay);
-                            }
-                        }
-                    });
-                });
-            });
-        });
-    }
-
     router.post(
         route("billings-submit.store", {
             fees: toPay.value,
@@ -204,7 +181,29 @@ const handlePayment = () => {
         });
     });
     toPay.value = temp;
-    showQr.value = true;
+    if (page.props.auth.user.meta !== null) {
+        toPay.value.map((e) => {
+            e.meta.map((data) => {
+                page.props.auth.user.meta.map((x) => {
+                    x.meta.map((meta) => {
+                        if (data.clearance == meta.clearance) {
+                            if (meta.balance == "PAID") {
+                                if (data.toPay > 0) {
+                                    return message.error(
+                                        `${meta.clearance} is already paid`
+                                    );
+                                }
+                            } else {
+                                data.balance =
+                                    Number(meta.balance) - Number(data.toPay);
+                                showQr.value = true;
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    }
 };
 
 const handlePay = (event, index) => {};
