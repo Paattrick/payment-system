@@ -109,14 +109,31 @@ const handleEdit = (val) => {
 const submit = () => {
     meta.value.map((e) => {
         e.meta.map((meta) => {
-            if (meta.balance !== "PAID" && meta.balance != 0) {
-                meta.balance = Number(meta.balance) - Number(meta.toPay);
-            } else {
-                meta.balance =
-                    Number(meta.amount) - Number(meta.toPay) == 0
-                        ? "PAID"
-                        : Number(meta.amount) - Number(meta.toPay);
+            if (Number(meta.balance) == 0) {
+                if (Number(meta.toPay) > 0) {
+                    if (Number(meta.amount) - Number(meta.toPay) == 0) {
+                        meta.balance = "PAID";
+                    } else {
+                        meta.balance = Number(meta.amount) - Number(meta.toPay);
+                    }
+                    meta.balance = Number(meta.amount) - Number(meta.toPay);
+                }
             }
+            if (Number(meta.balance) > 0) {
+                meta.balance = Number(meta.balance) - Number(meta.toPay);
+            }
+
+            // if (meta.balance !== "PAID" || Number(meta.balance) > 0) {
+            //     meta.balance = Number(meta.balance) - Number(meta.toPay);
+            // }
+            // if (Number(meta.amount) - Number(meta.toPay) == 0) {
+            //     meta.balance = "PAID";
+            // } else {
+            //     meta.balance =
+            //         Number(meta.amount) - Number(meta.toPay) == 0
+            //             ? "PAID"
+            //             : Number(meta.amount) - Number(meta.toPay);
+            // }
         });
     });
     router.post(
