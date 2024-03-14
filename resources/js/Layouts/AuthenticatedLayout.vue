@@ -16,6 +16,7 @@ import {
     TeamOutlined,
     ClockCircleOutlined,
     DeleteOutlined,
+    BellFilled,
 } from "@ant-design/icons-vue";
 
 const showingNavigationDropdown = ref(false);
@@ -228,6 +229,20 @@ const selectedKeys = ref([]);
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:ms-6 mr-5">
                         <!-- Settings Dropdown -->
+                        <div
+                            class="pt-2 mr-4"
+                            v-if="!page.props.auth.role.is_student"
+                        >
+                            <Link
+                                :href="route('transaction.index')"
+                                :active="route().current('transaction.index')"
+                            >
+                                <a-badge :count="page.props.notificationCount">
+                                    <!-- <a-avatar shape="square" size="large" /> -->
+                                    <BellFilled class="text-2xl" />
+                                </a-badge>
+                            </Link>
+                        </div>
                         <div class="ms-3 relative">
                             <Dropdown align="right" width="48">
                                 <template #trigger>

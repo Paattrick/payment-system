@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\History;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -41,6 +42,9 @@ class HandleInertiaRequests extends Middleware
                     'is_employee' => $user ? $request->user()->hasRole('employee') : null,
                 ]
             ],
+            'notificationCount' =>  History::query()
+                ->where('status', 'pending')
+                ->count(),
         ];
     }
 }

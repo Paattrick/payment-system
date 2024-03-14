@@ -10,6 +10,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\CollectorController;
 use App\Http\Controllers\UserHistoryController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect;
@@ -36,9 +37,9 @@ Route::get('/', function () {
     return Redirect::route('login');
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -78,5 +79,6 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/student/login', [StudentController::class, 'login'])->name('student.login');
 Route::post('/student/create', [StudentController::class, 'create'])->name('student.create');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 require __DIR__ . '/auth.php';
