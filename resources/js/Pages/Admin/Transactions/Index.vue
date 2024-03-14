@@ -107,6 +107,14 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
+    meta.value.map((e) => {
+        e.meta.map((meta) => {
+            meta.balance =
+                Number(meta.amount) - Number(meta.toPay) == 0
+                    ? "PAID"
+                    : Number(meta.amount) - Number(meta.toPay);
+        });
+    });
     router.post(
         route("submit-payment.store", selectedStudentId.value),
         {

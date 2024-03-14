@@ -82,7 +82,6 @@ class UserStudentController extends Controller
 
     public function submitPayment(Request $request, User $student)
     {
-        dd($request);
         $student->update([
             'meta' => $request->meta,
         ]);
