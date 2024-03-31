@@ -43,6 +43,11 @@ const columns = ref([
         dataIndex: "status",
         key: "status",
     },
+    {
+        title: "Order Id",
+        dataIndex: "id",
+        key: "id",
+    },
 ]);
 
 const descriptionColumns = ref([

@@ -17,8 +17,9 @@ const [modal] = Modal.useModal();
 
 const props = defineProps({
     students: Object,
+    fees: Object,
 });
-
+console.log(props.fees.data);
 const { sections, grades, strands } = composables();
 const form = useForm({
     last_name: null,
@@ -38,6 +39,7 @@ const form = useForm({
     id_number: null,
     password: null,
     confirmation: null,
+    meta: { ...props.fees.data },
 });
 
 const search = ref(null);
@@ -113,6 +115,28 @@ const columns = ref([
     },
 ]);
 
+const studentFeesColumns = ref([
+    {
+        title: "Name of Collection",
+        dataIndex: "name",
+        key: "name",
+    },
+    {
+        title: "Specific",
+        dataIndex: "meta",
+        key: "meta",
+    },
+    {
+        title: "Amount",
+        dataIndex: "amount",
+        key: "amount",
+    },
+    {
+        title: "Balance",
+        dataIndex: "balance",
+        key: "balance",
+    },
+]);
 const showModal = ref(false);
 const isEditing = ref(false);
 
@@ -188,6 +212,20 @@ const refresh = () => {
             loading.value = false;
         },
     });
+};
+
+const studentFees = ref(null);
+const showStudentFeesModal = ref(false);
+
+const handleChangeMunicipality = (val) => {
+    form.municipality = val;
+};
+
+const showStudentFees = (val) => {
+    console.log(val);
+
+    studentFees.value = [...val.meta];
+    showStudentFeesModal.value = true;
 };
 </script>
 <template>
@@ -265,6 +303,16 @@ const refresh = () => {
                         </div>
                     </template>
                     <template #customColumn="slotProps">
+                        <template
+                            v-if="slotProps.column.dataIndex === 'last_name'"
+                        >
+                            <div
+                                @click="showStudentFees(slotProps.record)"
+                                class="text-cyan-600 hover:cursor-pointer hover:underline"
+                            >
+                                {{ slotProps.record.last_name }}
+                            </div>
+                        </template>
                         <template
                             v-if="slotProps.column.dataIndex === 'actions'"
                         >
@@ -459,7 +507,32 @@ const refresh = () => {
                                 />
                             </a-form-item>
                             <a-form-item required label="Municipality">
-                                <a-input v-model:value="form.municipality" />
+                                <!-- <a-input v-model:value="form.municipality" /> -->
+                                <a-select
+                                    v-model:value="value"
+                                    style="width: 200px"
+                                    @change="handleChangeMunicipality(value)"
+                                    allowClear
+                                >
+                                    <a-select-option value="Alicia"
+                                        >Alicia</a-select-option
+                                    >
+                                    <a-select-option value="Anda"
+                                        >Anda</a-select-option
+                                    >
+                                    <a-select-option value="Candijay"
+                                        >Candijay</a-select-option
+                                    >
+                                    <a-select-option value="Duero"
+                                        >Duero</a-select-option
+                                    >
+                                    <a-select-option value="Guindulman"
+                                        >Guindulman</a-select-option
+                                    >
+                                    <a-select-option value="Jagna"
+                                        >Jagna</a-select-option
+                                    >
+                                </a-select>
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.municipality"
@@ -493,6 +566,103 @@ const refresh = () => {
                         >
                     </div>
                 </a-form>
+            </a-modal>
+            <a-modal
+                v-model:open="showStudentFeesModal"
+                title="Student Billings"
+                width="880px"
+                :footer="null"
+            >
+                <TableComponent
+                    :dataSource="studentFees"
+                    :columns="studentFeesColumns"
+                >
+                    <!-- <template #actionButtons>
+                        <div class="flex justify-between">
+                            <div class="flex space-x-4">
+                                <a-button @click="refresh()">Refresh</a-button>
+                            </div>
+                            <div class="flex justify-end">
+                                <a-button
+                                    :disabled="!isDisable"
+                                    type="primary"
+                                    @click="payBillings()"
+                                    >Pay Selected Billings</a-button
+                                >
+                            </div>
+                        </div>
+                    </template> -->
+                    <template #customColumn="slotProps">
+                        <template v-if="slotProps.column.dataIndex === 'meta'">
+                            <div
+                                v-for="(val, i) in slotProps.record.meta"
+                                :key="i"
+                            >
+                                <div class="mb-2">
+                                    <ul class="list-disc">
+                                        <li>{{ val.clearance }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                        <template
+                            v-if="slotProps.column.dataIndex === 'amount'"
+                        >
+                            <div
+                                v-for="(val, i) in slotProps.record.meta"
+                                :key="i"
+                            >
+                                <div class="mb-2">
+                                    <ul class="list-disc">
+                                        <li>
+                                            {{
+                                                new Intl.NumberFormat("PHP", {
+                                                    style: "currency",
+                                                    currency: "PHP",
+                                                }).format(val.amount)
+                                            }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                        <template
+                            v-if="slotProps.column.dataIndex === 'balance'"
+                        >
+                            <div
+                                v-for="(val, i) in slotProps.record.meta"
+                                :key="i"
+                            >
+                                <div v-if="val.balance !== 'PAID'">
+                                    <ul class="list-disc">
+                                        <li>
+                                            {{
+                                                new Intl.NumberFormat("PHP", {
+                                                    style: "currency",
+                                                    currency: "PHP",
+                                                }).format(
+                                                    val.balance == 0
+                                                        ? val.amount
+                                                        : val.balance
+                                                )
+                                            }}
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div v-else>
+                                    <ul class="list-disc">
+                                        <a-tag
+                                            class="font-semibold capitalize"
+                                            color="#86EFAC"
+                                        >
+                                            {{ val.balance }}
+                                        </a-tag>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </TableComponent>
             </a-modal>
         </div>
     </AuthenticatedLayout>

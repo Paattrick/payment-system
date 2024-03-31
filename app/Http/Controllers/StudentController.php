@@ -8,6 +8,8 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Http\Resources\StudentResource;
 use Illuminate\Validation\Rule;
+use App\Models\Fee;
+use App\Http\Resources\FeeResource;
 
 class StudentController extends Controller
 {
@@ -32,8 +34,13 @@ class StudentController extends Controller
             ->latest()
             ->paginate($request->per_page);
 
+        $fees = Fee::query()
+            ->whereNotNull('name')
+            ->get();
+
         return Inertia::render('Admin/Students/List/Index', [
-            'students' => StudentResource::collection($students)
+            'students' => StudentResource::collection($students),
+            'fees' => FeeResource::collection($fees)
         ]);
     }
 
@@ -67,6 +74,7 @@ class StudentController extends Controller
                 'id_number' => 'required|string',
                 'password' => 'nullable|max:255|same:confirmation',
                 'confirmation' => 'nullable|same:password',
+                'meta' => 'nullable'
             ],
             [
                 'password.same' => 'Password does not match.',
@@ -102,27 +110,12 @@ class StudentController extends Controller
                 'id_number' => $validated['id_number'],
                 'password' => $encrypted_password,
                 'email' => $validated['id_number'] . '@gnhs.edu.ph',
-                'status' => 'active'
+                'status' => 'active',
+                'meta' => $validated['meta'],
             ]
         )->assignRole('student');
 
         return redirect()->back();
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**

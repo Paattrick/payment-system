@@ -14,7 +14,9 @@ class History extends Model
         'name',
         'file',
         'meta',
-        'status'
+        'status',
+        'reference',
+        'note'
     ];
 
     protected $casts = [

@@ -26,6 +26,8 @@ const clearance = ref("");
 const amount = ref(0);
 const toPay = ref(0);
 const balance = ref(0);
+const note = ref(null);
+const showNoteModal = ref(false);
 
 const columns = ref([
     {
@@ -42,6 +44,11 @@ const columns = ref([
         title: "Status",
         dataIndex: "status",
         key: "status",
+    },
+    {
+        title: "Order Id",
+        dataIndex: "id",
+        key: "id",
     },
 ]);
 
@@ -148,6 +155,11 @@ const refresh = () => {
         },
     });
 };
+
+const viewNote = (val) => {
+    note.value = val.note;
+    showNoteModal.value = true;
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -186,12 +198,22 @@ const refresh = () => {
                                 </a-tag>
                             </div>
                             <div v-if="slotProps.record.status === 'declined'">
-                                <a-tag
-                                    class="font-semibold capitalize"
-                                    color="#f50"
-                                >
-                                    {{ slotProps.record.status }}
-                                </a-tag>
+                                <a-tooltip placement="top">
+                                    <template #title>
+                                        <span>View Note</span>
+                                    </template>
+                                    <a-tag
+                                        class="font-semibold capitalize"
+                                        color="#f50"
+                                    >
+                                        <div
+                                            @click="viewNote(slotProps.record)"
+                                            class="hover:cursor-pointer"
+                                        >
+                                            {{ slotProps.record.status }}
+                                        </div>
+                                    </a-tag>
+                                </a-tooltip>
                             </div>
                             <div v-if="slotProps.record.status === 'pending'">
                                 <a-tag
@@ -202,103 +224,22 @@ const refresh = () => {
                                 </a-tag>
                             </div>
                         </template>
-                        <!-- <template
-                            v-if="slotProps.column.dataIndex === 'actions'"
-                        >
-                            <div class="flex space-x-4">
-                                <div @click="handleEdit(slotProps.record)">
-                                    <a-tooltip placement="topLeft">
-                                        <template #title>
-                                            <span>View Payment</span>
-                                        </template>
-                                        <a-button><EditFilled /></a-button>
-                                    </a-tooltip>
-                                </div>
-                                <div @click="handleDelete(slotProps.record)">
-                                    <a-tooltip placement="topLeft">
-                                        <template #title>
-                                            <span>Archive</span>
-                                        </template>
-                                        <a-button><RestFilled /></a-button>
-                                    </a-tooltip>
-                                </div>
-                            </div>
-                        </template> -->
                     </template>
                 </TableComponent>
             </div>
-            <a-modal
-                v-model:open="showModal"
-                :title="isEditing ? 'Edit Fee' : 'Add Fee'"
-                :footer="null"
-                :afterClose="handleCancel"
-                :width="600"
-            >
-                <a-form :model="form" name="basic" layout="vertical">
-                    <a-form-item required label="Name">
-                        <a-input v-model:value="form.name" />
-                        <InputError class="mt-2" :message="form.errors.name" />
-                    </a-form-item>
-                    <a-card title="Specific">
-                        <a-form-item required label="Name">
-                            <a-input v-model:value="clearance" />
-                        </a-form-item>
-                        <a-form-item required label="Amount">
-                            <a-input v-model:value="amount" />
-                        </a-form-item>
-                        <a-button class="mb-4" type="primary" @click="addField"
-                            >Add Specific</a-button
-                        >
-                        <div v-if="form.meta.length > 0">
-                            <a-table
-                                :columns="descriptionColumns"
-                                :dataSource="form.meta"
-                                :pagination="false"
-                                class="shadow-xl"
-                                bordered
-                            >
-                                <template
-                                    #bodyCell="{ column, record, text, index }"
-                                >
-                                    <template
-                                        v-if="column.dataIndex === 'meta'"
-                                    >
-                                        {{ record.clearance }}
-                                    </template>
-                                    <template
-                                        v-if="column.dataIndex === 'amount'"
-                                    >
-                                        {{
-                                            new Intl.NumberFormat("PHP", {
-                                                style: "currency",
-                                                currency: "PHP",
-                                            }).format(record.amount)
-                                        }}
-                                    </template>
-                                    <template
-                                        v-if="column.dataIndex === 'actions'"
-                                    >
-                                        <a-button @click="removeField(index)">
-                                            <DeleteFilled />
-                                        </a-button>
-                                    </template>
-                                </template>
-                            </a-table>
-                        </div>
-                    </a-card>
-
-                    <div class="flex justify-end mt-5">
-                        <a-button class="mr-2" @click.prevent="handleCancel"
-                            >Cancel</a-button
-                        >
-                        <a-button
-                            type="primary"
-                            :loading="form.processing"
-                            @click.prevent="isEditing ? update() : submit()"
-                            >{{ isEditing ? "Update" : "Submit" }}</a-button
-                        >
-                    </div>
-                </a-form>
+            <a-modal v-model:open="showNoteModal" title="Note" :footer="null">
+                <a-card>
+                    <a-timeline>
+                        <a-timeline-item color="#d97706">{{
+                            note
+                        }}</a-timeline-item>
+                    </a-timeline>
+                </a-card>
+                <div class="flex justify-end mt-5">
+                    <a-button class="mr-2" @click="showNoteModal = false"
+                        >Close</a-button
+                    >
+                </div>
             </a-modal>
         </div>
     </AuthenticatedLayout>

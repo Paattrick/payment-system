@@ -11,20 +11,14 @@ const props = defineProps({
     fees: Object,
 });
 
-const form = useForm({});
+const form = useForm({
+    meta: null,
+});
 const page = usePage();
 const isDisable = ref(false);
-const totalToPay = ref(0);
-const tableData = ref([]);
 const toPay = ref([]);
 
-onMounted(() => {
-    if (page.props.auth.user.meta === null) {
-        tableData.value = props.fees.data;
-    } else {
-        tableData.value = page.props.auth.user.meta;
-    }
-});
+form.meta = [...page.props.auth.user.meta];
 
 const columns = ref([
     {
@@ -42,11 +36,11 @@ const columns = ref([
         dataIndex: "amount",
         key: "amount",
     },
-    // {
-    //     title: "Balance",
-    //     dataIndex: "balance",
-    //     key: "balance",
-    // },
+    {
+        title: "Balance",
+        dataIndex: "balance",
+        key: "balance",
+    },
 ]);
 
 const columnsAdmission = ref([
@@ -80,7 +74,7 @@ const descriptionColumns = ref([
         align: "center",
     },
     {
-        title: "Amount",
+        title: "Amount To Pay",
         dataIndex: "amount",
         key: "amount",
         align: "center",
@@ -96,10 +90,14 @@ const showFileModal = ref(false);
 const file = ref(null);
 const submitLoading = ref(false);
 const showAdmission = ref(false);
+const reference = ref(null);
+const imageForm = useForm({
+    image: null,
+});
 
 const handleCancel = () => {
-    form.reset();
-    form.errors = {};
+    // form.reset();
+    // form.errors = {};
     showModal.value = false;
 };
 
@@ -113,27 +111,25 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
-    router.post(
+    imageForm.post(
         route("billings-submit.store", {
-            fees: toPay.value,
+            forceFormData: true,
+            fees: form.meta,
             student: page.props.auth.user,
-            file: file.value,
-        })
+            reference: reference.value,
+        }),
+        {
+            onSuccess: () => {
+                showQr.value = false;
+            },
+        }
     );
 
     showFileModal.value = false;
-    refresh();
 };
 
 const refresh = () => {
-    router.reload({
-        onStart: () => {
-            loading.value = true;
-        },
-        onFinish: () => {
-            loading.value = false;
-        },
-    });
+    window.location.reload();
 };
 
 const onSelectChange = (value) => {
@@ -145,7 +141,7 @@ const onSelectChange = (value) => {
         isDisable.value = false;
     }
 
-    props.fees.data.map((e) => {
+    form.meta.map((e) => {
         selectedBillings.value.map((x) => {
             if (e.id == x) {
                 toPay.value.push({
@@ -168,50 +164,47 @@ const payBillings = () => {
 };
 
 const handlePayment = () => {
-    const temp = [];
-    toPay.value.map((e) => {
-        e.meta.map((meta) => {
-            if (meta.toPay != 0) {
-                temp.push({
-                    id: e.id,
-                    name: e.name,
-                    meta: e.meta,
-                });
-            }
-        });
-    });
-    toPay.value = temp;
-    if (page.props.auth.user.meta !== null) {
-        toPay.value.map((e) => {
-            e.meta.map((data) => {
-                page.props.auth.user.meta.map((x) => {
-                    x.meta.map((meta) => {
-                        if (data.clearance == meta.clearance) {
-                            if (meta.balance == "PAID") {
-                                if (data.toPay > 0) {
-                                    return message.error(
-                                        `${meta.clearance} is already paid`
-                                    );
-                                }
-                            } else {
-                                data.balance =
-                                    Number(meta.balance) - Number(data.toPay);
-                                showQr.value = true;
-                            }
-                        }
-                    });
-                });
-            });
-        });
-    } else {
-        showQr.value = true;
-    }
+    // if (form.meta !== null) {
+    //     form.meta.map((x) => {
+    //         x.meta.map((meta) => {
+    //             if (Number(meta.balance) > 0) {
+    //                 if (
+    //                     Number(meta.balance) + Number(meta.toPay) >
+    //                     Number(meta.amount)
+    //                 ) {
+    //                     return message.error(
+    //                         `Your payment is greater than the exact amount`
+    //                     );
+    //                 }
+    //                 if (
+    //                     Number(meta.balance) + Number(meta.toPay) <=
+    //                     Number(meta.amount)
+    //                 ) {
+    //                     showQr.value = true;
+    //                 }
+    //             }
+    //             if (Number(meta.balance) == 0) {
+    //                 if (meta.toPay > meta.amount) {
+    //                     return message.error(
+    //                         `Your payment is greater than the exact amount`
+    //                     );
+    //                 }
+    //                 if (meta.toPay < meta.amount) {
+    //                     showQr.value = true;
+    //                 }
+    //             }
+    //         });
+    //     });
+    // }
+    showQr.value = true;
+    showModal.value = false;
 };
 
-const handlePay = (event, index) => {};
+const selectedImage = ref(null);
 
-const checkAdmission = () => {
-    showAdmission.value = true;
+const onChangeFile = (event) => {
+    console.log(event.target.files[0]);
+    selectedImage.value = event.target.files[0];
 };
 </script>
 <template>
@@ -220,7 +213,7 @@ const checkAdmission = () => {
             <div class="page-title height-md:mb-30">Billings</div>
             <div>
                 <TableComponent
-                    :dataSource="props.fees.data"
+                    :dataSource="form.meta"
                     :columns="columns"
                     :isLoading="loading"
                     :hasRowSelection="true"
@@ -232,12 +225,6 @@ const checkAdmission = () => {
                                 <a-button @click="refresh()">Refresh</a-button>
                             </div>
                             <div class="flex justify-end">
-                                <a-button
-                                    type="primary"
-                                    @click="checkAdmission()"
-                                    class="mr-5"
-                                    >Check Admission</a-button
-                                >
                                 <a-button
                                     :disabled="!isDisable"
                                     type="primary"
@@ -288,7 +275,7 @@ const checkAdmission = () => {
                                 v-for="(val, i) in slotProps.record.meta"
                                 :key="i"
                             >
-                                <div>
+                                <div v-if="val.balance !== 'PAID'">
                                     <ul class="list-disc">
                                         <li>
                                             {{
@@ -296,25 +283,23 @@ const checkAdmission = () => {
                                                     style: "currency",
                                                     currency: "PHP",
                                                 }).format(
-                                                    val.amount - val.toPay
+                                                    val.balance == 0
+                                                        ? val.amount
+                                                        : val.balance
                                                 )
                                             }}
                                         </li>
                                     </ul>
                                 </div>
-                            </div>
-                        </template>
-                        <template
-                            v-if="slotProps.column.dataIndex === 'actions'"
-                        >
-                            <div class="flex space-x-4">
-                                <div @click="handleEdit(slotProps.record)">
-                                    <a-tooltip placement="topLeft">
-                                        <template #title>
-                                            <span>Pay Bill</span>
-                                        </template>
-                                        <a-button type="primary">Pay</a-button>
-                                    </a-tooltip>
+                                <div v-else>
+                                    <ul class="list-disc">
+                                        <a-tag
+                                            class="font-semibold capitalize"
+                                            color="#86EFAC"
+                                        >
+                                            {{ val.balance }}
+                                        </a-tag>
+                                    </ul>
                                 </div>
                             </div>
                         </template>
@@ -341,33 +326,40 @@ const checkAdmission = () => {
                                 {{ record.name }}
                             </template>
                             <template v-if="column.dataIndex === 'amount'">
-                                <div
-                                    v-for="(val, i) in record.meta"
-                                    :index="i"
-                                    class="flex justify-between mb-2 w-full"
-                                >
-                                    <div class="pt-2">
-                                        {{ val.clearance }}
-                                    </div>
-                                    <div class="flex space-x-4">
+                                <div v-for="(val, i) in record.meta" :index="i">
+                                    <div
+                                        v-if="val.balance != 'PAID'"
+                                        class="flex justify-between mb-2 w-full"
+                                    >
                                         <div class="pt-2">
-                                            {{
-                                                new Intl.NumberFormat("PHP", {
-                                                    style: "currency",
-                                                    currency: "PHP",
-                                                }).format(val.amount)
-                                            }}
+                                            {{ val.clearance }}
                                         </div>
-                                        <div>
-                                            <a-input-number
-                                                placeholder="0.00"
-                                                :step="0.01"
-                                                class="w-full"
-                                                name="to_pay"
-                                                @change="handlePay($event, i)"
-                                                v-model:value="val.toPay"
-                                            >
-                                            </a-input-number>
+                                        <div class="flex space-x-4">
+                                            <div class="pt-2">
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "PHP",
+                                                        {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                        }
+                                                    ).format(
+                                                        val.balance > 0
+                                                            ? val.balance
+                                                            : val.amount
+                                                    )
+                                                }}
+                                            </div>
+                                            <div>
+                                                <a-input-number
+                                                    placeholder="0.00"
+                                                    :step="0.01"
+                                                    class="w-full"
+                                                    name="to_pay"
+                                                    v-model:value="val.toPay"
+                                                >
+                                                </a-input-number>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -387,31 +379,40 @@ const checkAdmission = () => {
                     title="Scan To Pay"
                     :footer="null"
                 >
-                    <div class="">
-                        <div class="flex pl-8">
-                            <img
-                                class="w-[400px] h-[600px]"
-                                src="../../../../../public/build/assets/QR.jpg"
-                            />
+                    <a-form layout="vertical" enctype="multipart/form-data">
+                        <div class="flex pl-0">
+                            <div>
+                                <img
+                                    class="w-[200px] h-[200px]"
+                                    src="../../../../../public/build/assets/QR.jpg"
+                                />
+                            </div>
+                            <div>
+                                <a-form-item label="Upload Screenshot">
+                                    <a-input
+                                        type="file"
+                                        @input="
+                                            imageForm.image =
+                                                $event.target.files[0]
+                                        "
+                                    />
+                                    <InputError
+                                        class="mt-2"
+                                        :message="page.props?.errors?.file"
+                                    />
+                                </a-form-item>
+                                <a-form-item label="Reference No.">
+                                    <a-input
+                                        v-model:value="reference"
+                                        type="text"
+                                    />
+                                    <InputError
+                                        class="mt-2"
+                                        :message="page.props?.errors?.reference"
+                                    />
+                                </a-form-item>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex justify-end pt-5">
-                        <a-button @click="uploadFile()" type="primary">
-                            Proceed Payment
-                        </a-button>
-                    </div>
-                </a-modal>
-            </div>
-            <div>
-                <a-modal
-                    v-model:open="showFileModal"
-                    title="Payment"
-                    :footer="null"
-                >
-                    <a-form layout="vertical">
-                        <a-form-item label="Upload Screenshot">
-                            <a-input v-model:value="file" type="file" />
-                        </a-form-item>
                     </a-form>
                     <div class="flex justify-end pt-5">
                         <a-button
@@ -421,131 +422,6 @@ const checkAdmission = () => {
                         >
                             Submit
                         </a-button>
-                    </div>
-                </a-modal>
-            </div>
-            <div>
-                <a-modal
-                    v-model:open="showAdmission"
-                    title="Admission Progress"
-                    :footer="null"
-                    width="800px"
-                >
-                    <div class="">
-                        <TableComponent
-                            :dataSource="page.props.auth.user.meta"
-                            :columns="columnsAdmission"
-                            :isLoading="loading"
-                            :hasRowSelection="false"
-                        >
-                            <template #customColumn="slotProps">
-                                <template
-                                    v-if="slotProps.column.dataIndex === 'meta'"
-                                >
-                                    <div
-                                        v-for="(val, i) in slotProps.record
-                                            .meta"
-                                        :key="i"
-                                    >
-                                        <div class="mb-2">
-                                            <ul class="list-disc">
-                                                <li>{{ val.clearance }}</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template
-                                    v-if="
-                                        slotProps.column.dataIndex === 'amount'
-                                    "
-                                >
-                                    <div
-                                        v-for="(val, i) in slotProps.record
-                                            .meta"
-                                        :key="i"
-                                    >
-                                        <div class="mb-2">
-                                            <ul class="list-disc">
-                                                <li>
-                                                    {{
-                                                        new Intl.NumberFormat(
-                                                            "PHP",
-                                                            {
-                                                                style: "currency",
-                                                                currency: "PHP",
-                                                            }
-                                                        ).format(val.amount)
-                                                    }}
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template
-                                    v-if="
-                                        slotProps.column.dataIndex === 'balance'
-                                    "
-                                >
-                                    <div
-                                        v-for="(val, i) in slotProps.record
-                                            .meta"
-                                        :key="i"
-                                    >
-                                        <div
-                                            v-if="val.balance == 'PAID'"
-                                            class="text-center mb-4"
-                                        >
-                                            <a-tag
-                                                class="font-semibold capitalize"
-                                                color="#86EFAC"
-                                            >
-                                                paid
-                                            </a-tag>
-                                        </div>
-                                        <div v-else>
-                                            <ul class="list-disc">
-                                                <li>
-                                                    {{
-                                                        new Intl.NumberFormat(
-                                                            "PHP",
-                                                            {
-                                                                style: "currency",
-                                                                currency: "PHP",
-                                                            }
-                                                        ).format(
-                                                            val.amount -
-                                                                val.toPay
-                                                        )
-                                                    }}
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template
-                                    v-if="
-                                        slotProps.column.dataIndex === 'actions'
-                                    "
-                                >
-                                    <div class="flex space-x-4">
-                                        <div
-                                            @click="
-                                                handleEdit(slotProps.record)
-                                            "
-                                        >
-                                            <a-tooltip placement="topLeft">
-                                                <template #title>
-                                                    <span>Pay Bill</span>
-                                                </template>
-                                                <a-button type="primary"
-                                                    >Pay</a-button
-                                                >
-                                            </a-tooltip>
-                                        </div>
-                                    </div>
-                                </template>
-                            </template>
-                        </TableComponent>
                     </div>
                 </a-modal>
             </div>

@@ -1,17 +1,10 @@
 <script setup>
-import InputError from "@/Components/InputError.vue";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import {
-    DeleteFilled,
-    EditFilled,
-    ExclamationCircleFilled,
-    RestFilled,
-} from "@ant-design/icons-vue";
-import { useForm, router, usePage } from "@inertiajs/vue3";
-import { Modal, message } from "ant-design-vue";
-import { h, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
-const [modal] = Modal.useModal();
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { EditFilled, ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { router, useForm, usePage } from "@inertiajs/vue3";
+import { Modal } from "ant-design-vue";
+import { createVNode, ref } from "vue";
 
 const props = defineProps({
     transactions: Object,
@@ -24,11 +17,8 @@ const form = useForm({
     meta: [],
 });
 
-const clearance = ref("");
-const amount = ref(0);
-const toPay = ref(0);
-const balance = ref(0);
 const selectedStudentId = ref(null);
+const selectedFile = ref(null);
 
 const columns = ref([
     {
@@ -49,69 +39,30 @@ const columns = ref([
     },
 ]);
 
-const descriptionColumns = ref([
-    {
-        title: "Specific",
-        dataIndex: "meta",
-        key: "meta",
-        align: "center",
-    },
-    {
-        title: "To Pay",
-        dataIndex: "amount",
-        key: "amount",
-        align: "center",
-    },
-]);
-
-const showModal = ref(false);
-const isEditing = ref(false);
 const loading = ref(false);
 const showPaymentModal = ref(false);
 const meta = ref(null);
 const transactionId = ref(null);
-
-const handleAdd = () => {
-    showModal.value = true;
-    isEditing.value = false;
-};
-
-const handleCancel = () => {
-    form.reset();
-    form.errors = {};
-    showModal.value = false;
-};
-
-const addField = () => {
-    form.meta.push({
-        clearance: clearance.value,
-        amount: amount.value,
-        toPay: toPay.value,
-        balance: balance.value,
-    });
-    clearance.value = null;
-    amount.value = 0;
-};
-
-const removeField = (index) => {
-    form.meta.splice(index, 1);
-};
-
-const handleEdit = (val) => {
-    Object.entries(val).forEach(([key, value]) => {
-        form[key] = value;
-    });
-
-    showModal.value = true;
-    isEditing.value = true;
-};
+const showReceipt = ref(false);
+const showDeclineModal = ref(false);
+const note = ref(null);
 
 const submit = () => {
     meta.value.map((e) => {
         e.meta.map((meta) => {
-            meta.amount = Number(meta.amount) - Number(meta.toPay);
-            if (meta.amount == 0) {
+            if (Number(meta.amount) - Number(meta.toPay) == 0) {
                 meta.balance = "PAID";
+            }
+            if (meta.balance !== "PAID" && meta.balance > 0) {
+                const test = Number(meta.balance) - Number(meta.toPay);
+                if (test == 0) {
+                    meta.balance = "PAID";
+                } else {
+                    meta.balance = Number(meta.balance) - Number(meta.toPay);
+                }
+            }
+            if (meta.balance !== "PAID" && meta.balance == 0) {
+                meta.balance = Number(meta.amount) - Number(meta.toPay);
             }
         });
     });
@@ -142,7 +93,11 @@ const refresh = () => {
     });
 };
 
+const reference = ref(null);
+
 const viewPayment = (val) => {
+    reference.value = val.reference;
+    selectedFile.value = val.file;
     meta.value = val.meta;
     showPaymentModal.value = true;
     selectedStudentId.value = val.student_id;
@@ -150,17 +105,37 @@ const viewPayment = (val) => {
 };
 
 const handleDecline = () => {
+    Modal.confirm({
+        title: "Do you Want to decline these payment?",
+        icon: createVNode(ExclamationCircleOutlined),
+        content: createVNode("div", {
+            style: "color:red;",
+        }),
+        onOk() {
+            showDeclineModal.value = true;
+        },
+        onCancel() {},
+    });
+};
+
+const showReceiptModal = () => {
+    showReceipt.value = true;
+};
+
+const submitDecline = () => {
     router.post(
         route("decline-payment.store", selectedStudentId.value),
         {
             meta: meta.value,
             transactionId: transactionId.value,
+            note: note.value,
         },
         {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
                 showPaymentModal.value = false;
+                showDeclineModal.value = false;
             },
         }
     );
@@ -212,79 +187,6 @@ const handleDecline = () => {
                 </TableComponent>
             </div>
             <a-modal
-                v-model:open="showModal"
-                :title="isEditing ? 'Edit Fee' : 'Add Fee'"
-                :footer="null"
-                :afterClose="handleCancel"
-                :width="600"
-            >
-                <a-form :model="form" name="basic" layout="vertical">
-                    <a-form-item required label="Name">
-                        <a-input v-model:value="form.name" />
-                        <InputError class="mt-2" :message="form.errors.name" />
-                    </a-form-item>
-                    <a-card title="Specific">
-                        <a-form-item required label="Name">
-                            <a-input v-model:value="clearance" />
-                        </a-form-item>
-                        <a-form-item required label="Amount">
-                            <a-input v-model:value="amount" />
-                        </a-form-item>
-                        <a-button class="mb-4" type="primary" @click="addField"
-                            >Add Specific</a-button
-                        >
-                        <div v-if="form.meta.length > 0">
-                            <a-table
-                                :columns="descriptionColumns"
-                                :dataSource="form.meta"
-                                :pagination="false"
-                                class="shadow-xl"
-                                bordered
-                            >
-                                <template
-                                    #bodyCell="{ column, record, text, index }"
-                                >
-                                    <template
-                                        v-if="column.dataIndex === 'meta'"
-                                    >
-                                        {{ record.clearance }}
-                                    </template>
-                                    <template
-                                        v-if="column.dataIndex === 'amount'"
-                                    >
-                                        {{
-                                            new Intl.NumberFormat("PHP", {
-                                                style: "currency",
-                                                currency: "PHP",
-                                            }).format(record.amount)
-                                        }}
-                                    </template>
-                                    <template
-                                        v-if="column.dataIndex === 'actions'"
-                                    >
-                                        <a-button @click="removeField(index)">
-                                            <DeleteFilled />
-                                        </a-button>
-                                    </template>
-                                </template>
-                            </a-table>
-                        </div>
-                    </a-card>
-
-                    <div class="flex justify-end mt-5">
-                        <a-button class="mr-2" @click.prevent="handleCancel"
-                            >Cancel</a-button
-                        >
-                        <a-button
-                            type="primary"
-                            :loading="form.processing"
-                            @click.prevent="isEditing ? update() : submit()"
-                            >{{ isEditing ? "Update" : "Submit" }}</a-button
-                        >
-                    </div>
-                </a-form>
-            </a-modal>
-            <a-modal
                 v-model:open="showPaymentModal"
                 title="Payment"
                 :footer="null"
@@ -297,34 +199,31 @@ const handleDecline = () => {
                                     v-if="x.toPay != 0 && x.balance !== 'PAID'"
                                 >
                                     <div>
-                                        <span> Name: {{ val.name }} </span>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Name:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{ val.name }}
+                                            </div>
+                                        </span>
                                     </div>
-                                    <div>Specific: {{ x.clearance }}</div>
-                                    <div>Total Amount: {{ x.amount }}</div>
-                                    <div>To Pay: {{ x.toPay }}</div>
-                                </div>
-                            </a-card>
-                        </div>
-                    </div>
-
-                    <!-- <a-table
-                        :dataSource="meta"
-                        :columns="descriptionColumns"
-                        :pagination="false"
-                    >
-                        <template #bodyCell="{ column, record, text }">
-                            <template v-if="column.dataIndex === 'meta'">
-                                <div v-for="(val, i) in record.meta" :key="i">
-                                    <div v-if="val.toPay !== '0'" class="mb-2">
-                                        {{ val.clearance }} {{ record }}
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Specific:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{ x.clearance }}
+                                            </div>
+                                        </span>
                                     </div>
-                                </div>
-                            </template>
-                            <template v-if="column.dataIndex === 'amount'">
-                                <div v-for="(val, i) in record.meta" :key="i">
-                                    <div class="mb-2" v-if="val.toPay !== '0'">
-                                        <ul class="list-disc">
-                                            <li>
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Total Amount:
+                                            </div>
+                                            <div class="text-lg">
                                                 {{
                                                     new Intl.NumberFormat(
                                                         "PHP",
@@ -332,15 +231,55 @@ const handleDecline = () => {
                                                             style: "currency",
                                                             currency: "PHP",
                                                         }
-                                                    ).format(val.toPay)
+                                                    ).format(x.amount)
                                                 }}
-                                            </li>
-                                        </ul>
+                                            </div>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Balance:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "PHP",
+                                                        {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                        }
+                                                    ).format(x.balance)
+                                                }}
+                                            </div>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                To Pay:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "PHP",
+                                                        {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                        }
+                                                    ).format(x.toPay)
+                                                }}
+                                            </div>
+                                        </span>
                                     </div>
                                 </div>
-                            </template>
-                        </template>
-                    </a-table> -->
+                            </a-card>
+                        </div>
+                    </div>
+                    <div class="mx-6">
+                        <a @click="showReceiptModal"> view receipt </a>
+                    </div>
+
                     <div
                         class="flex justify-end mt-5"
                         v-if="
@@ -358,6 +297,54 @@ const handleDecline = () => {
                             >Accept</a-button
                         >
                     </div>
+                </div>
+            </a-modal>
+            <div>
+                <a-modal
+                    v-model:open="showReceipt"
+                    :title="`Reference No: ${reference}`"
+                    :footer="null"
+                >
+                    <div class="flex justify-between">
+                        <div class="mx-auto">
+                            <img
+                                :src="`../storage/images/${selectedFile}`"
+                                class="h-[250px] w-[250px]"
+                            />
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-5">
+                        <a-button type="primary" @click="showReceipt = false"
+                            >Close</a-button
+                        >
+                    </div>
+                </a-modal>
+            </div>
+            <a-modal v-model:open="showDeclineModal" :footer="null">
+                <a-form layout="vertical">
+                    <a-form-item label="Add Note">
+                        <a-input
+                            v-model:value="note"
+                            placeholder="add note..."
+                        />
+                    </a-form-item>
+                </a-form>
+                <div
+                    class="flex justify-end mt-5"
+                    v-if="
+                        page.props.auth.role.is_employee ||
+                        !page.props.auth.role.is_admin
+                    "
+                >
+                    <a-button class="mr-2" @click="showDeclineModal = false"
+                        >Cancel</a-button
+                    >
+                    <a-button
+                        type="primary"
+                        :loading="form.processing"
+                        @click.prevent="submitDecline()"
+                        >Submit</a-button
+                    >
                 </div>
             </a-modal>
         </div>

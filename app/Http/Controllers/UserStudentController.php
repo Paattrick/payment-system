@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\History;
 use App\Http\Resources\FeeResource;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class UserStudentController extends Controller
 {
@@ -30,16 +31,25 @@ class UserStudentController extends Controller
     public function submitFees(Request $request, User $student)
     {
         $validateFile = $request->validate([
-            'file' => 'required'
+            'reference' => 'required'
         ]);
 
-        $history = History::create([
-            'student_id' => $request->student['id'],
-            'name' => $request->student['name'],
-            'meta' => $request->fees,
-            'file' => $validateFile['file'],
-            'status' => 'pending'
-        ]);
+        if($request->hasFile('image')) {
+            $file = $request->file('image');
+            $fileName = $file->getClientOriginalName();
+            $path = 'public/images/' . $fileName;
+            Storage::disk('local')->put($path, file_get_contents($file));
+
+            $history = History::create([
+                'student_id' => $request->student['id'],
+                'name' => $request->student['name'],
+                'meta' => $request->fees,
+                'file' => $fileName,
+                'status' => 'pending',
+                'reference' => $validateFile['reference']
+            ]);
+        }
+
 
         return redirect()->back();
     }
@@ -64,7 +74,8 @@ class UserStudentController extends Controller
     {
         $history = History::where('id', $request->transactionId)
             ->update([
-                'status' => 'declined'
+                'status' => 'declined',
+                'note' => $request->note
             ]);
 
         return redirect()->back();

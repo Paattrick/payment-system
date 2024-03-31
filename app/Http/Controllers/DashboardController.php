@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User;
+use App\Models\History;
 use App\Http\Resources\StudentResource;
 
 class DashboardController extends Controller
@@ -14,6 +15,11 @@ class DashboardController extends Controller
         $request->merge([
             'per_page' => $request->per_page ?: '15',
         ]);
+
+        $history = History::query()
+            ->whereNotNull('student_id')
+            ->where('status', 'pending')
+            ->first();
 
         $user = User::query()
             ->whereHas('roles', fn ($query) => $query->where('name', 'student'))
@@ -32,7 +38,8 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'students' => $user,
             'activeStudents' => $activeStudents,
-            'archivedStudents' => $archivedStudents
+            'archivedStudents' => $archivedStudents,
+            'history' => $history
         ]);
     }
 }
