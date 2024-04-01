@@ -20,6 +20,10 @@ const toPay = ref([]);
 
 form.meta = [...page.props.auth.user.meta];
 
+onMounted(() => {
+    remainingBalance();
+});
+
 const columns = ref([
     {
         title: "Name of Collection",
@@ -94,6 +98,7 @@ const reference = ref(null);
 const imageForm = useForm({
     image: null,
 });
+const runningBalance = ref(null);
 
 const handleCancel = () => {
     // form.reset();
@@ -108,6 +113,20 @@ const handleEdit = (val) => {
 
     showModal.value = true;
     isEditing.value = true;
+};
+
+const remainingBalance = () => {
+    let temp = 0;
+    form.meta.map((e) => {
+        e.meta.map((meta) => {
+            console.log(meta);
+            if (meta.balance != "PAID") {
+                temp = Number(temp) + Number(meta.balance);
+            }
+        });
+    });
+
+    runningBalance.value = temp;
 };
 
 const submit = () => {
@@ -160,6 +179,14 @@ const uploadFile = () => {
 };
 
 const payBillings = () => {
+    form.meta.map((e) => {
+        e.meta.map((meta) => {
+            console.log(meta);
+            if (meta.toPay != 0) {
+                meta.toPay = 0;
+            }
+        });
+    });
     showModal.value = true;
 };
 
@@ -224,13 +251,25 @@ const onChangeFile = (event) => {
                             <div class="flex space-x-4">
                                 <a-button @click="refresh()">Refresh</a-button>
                             </div>
-                            <div class="flex justify-end">
-                                <a-button
-                                    :disabled="!isDisable"
-                                    type="primary"
-                                    @click="payBillings()"
-                                    >Pay Selected Billings</a-button
-                                >
+
+                            <div class="flex justify-end space-x-4">
+                                <div class="font-bold text-lg">
+                                    Running Balance:
+                                    {{
+                                        new Intl.NumberFormat("PHP", {
+                                            style: "currency",
+                                            currency: "PHP",
+                                        }).format(runningBalance)
+                                    }}
+                                </div>
+                                <div>
+                                    <a-button
+                                        :disabled="!isDisable"
+                                        type="primary"
+                                        @click="payBillings()"
+                                        >Process</a-button
+                                    >
+                                </div>
                             </div>
                         </div>
                     </template>
