@@ -60,7 +60,7 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'student', 'middleware' => 'role:student'], function () {
         Route::get('/billings', [UserStudentController::class, 'index'])->name('billings.index');
-        Route::post('/billings/submit', [UserStudentController::class, 'submitFees'])->name('billings-submit.store');
+        Route::post('/billings/{student}/submit', [UserStudentController::class, 'submitFees'])->name('billings-submit.store');
 
         Route::post('/billings/payments', [UserStudentController::class, 'payments'])->name('payments.index');
         Route::get('/history', [UserHistoryController::class, 'index'])->name('student-history.index');

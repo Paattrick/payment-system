@@ -31,7 +31,7 @@ class UserStudentController extends Controller
     public function submitFees(Request $request, User $student)
     {
         $validateFile = $request->validate([
-            'reference' => 'required'
+            'reference' => 'required|unique:histories,reference'
         ]);
 
         if($request->hasFile('image')) {
@@ -48,6 +48,10 @@ class UserStudentController extends Controller
                 'status' => 'pending',
                 'reference' => $validateFile['reference']
             ]);
+
+            $student->update([
+                'meta' => $request->fees,
+            ]);
         }
 
 
@@ -56,6 +60,7 @@ class UserStudentController extends Controller
 
     public function submitPayment(Request $request, User $student)
     {
+       
         $student->update([
             'meta' => $request->meta,
         ]);

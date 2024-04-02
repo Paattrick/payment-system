@@ -64,6 +64,8 @@ const submit = () => {
             if (meta.balance !== "PAID" && meta.balance == 0) {
                 meta.balance = Number(meta.amount) - Number(meta.toPay);
             }
+            meta.toPay = 0;
+            meta.status = "accepted";
         });
     });
     router.post(

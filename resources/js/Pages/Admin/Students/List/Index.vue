@@ -13,14 +13,16 @@ import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
 import { Modal, notification } from "ant-design-vue";
 import { watchDebounced } from "@vueuse/core";
+import { onMounted } from "vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
     students: Object,
     fees: Object,
 });
-console.log(props.fees.data);
+
 const { sections, grades, strands } = composables();
+
 const form = useForm({
     last_name: null,
     name: null,
@@ -222,10 +224,27 @@ const handleChangeMunicipality = (val) => {
 };
 
 const showStudentFees = (val) => {
-    console.log(val);
-
     studentFees.value = [...val.meta];
     showStudentFeesModal.value = true;
+
+    remainingBalance();
+};
+
+const runningBalance = ref(null);
+
+const remainingBalance = () => {
+    let temp = 0;
+    studentFees.value.map((e) => {
+        e.meta.map((meta) => {
+            console.log(meta);
+            if (meta.balance != "PAID") {
+                let toAdd = meta.balance == 0 ? meta.amount : meta.balance;
+                temp = Number(temp) + Number(toAdd);
+            }
+        });
+    });
+
+    runningBalance.value = temp;
 };
 </script>
 <template>
@@ -577,21 +596,19 @@ const showStudentFees = (val) => {
                     :dataSource="studentFees"
                     :columns="studentFeesColumns"
                 >
-                    <!-- <template #actionButtons>
+                    <template #actionButtons>
                         <div class="flex justify-between">
-                            <div class="flex space-x-4">
-                                <a-button @click="refresh()">Refresh</a-button>
-                            </div>
-                            <div class="flex justify-end">
-                                <a-button
-                                    :disabled="!isDisable"
-                                    type="primary"
-                                    @click="payBillings()"
-                                    >Pay Selected Billings</a-button
-                                >
+                            <div class="font-bold text-lg">
+                                Running Balance:
+                                {{
+                                    new Intl.NumberFormat("PHP", {
+                                        style: "currency",
+                                        currency: "PHP",
+                                    }).format(runningBalance)
+                                }}
                             </div>
                         </div>
-                    </template> -->
+                    </template>
                     <template #customColumn="slotProps">
                         <template v-if="slotProps.column.dataIndex === 'meta'">
                             <div

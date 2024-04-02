@@ -24,14 +24,6 @@ const page = usePage();
 
 const collapsed = ref(false);
 const selectedKeys = ref([]);
-
-onMounted(() => {
-    setInterval(refreshNotification, 10000);
-});
-
-const refreshNotification = () => {
-    router.reload();
-};
 </script>
 
 <template>
@@ -126,7 +118,7 @@ const refreshNotification = () => {
                                 :active="route().current('transaction.index')"
                                 class="text-white"
                             >
-                                Transactions
+                                Payment Request
                             </Link></span
                         >
                     </a-menu-item>
@@ -171,7 +163,7 @@ const refreshNotification = () => {
                                 :active="route().current('history.index')"
                                 class="text-white"
                             >
-                                History
+                                Transaction History
                             </Link></span
                         >
                     </a-menu-item>
@@ -237,20 +229,7 @@ const refreshNotification = () => {
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:ms-6 mr-5">
                         <!-- Settings Dropdown -->
-                        <div
-                            class="pt-2 mr-4"
-                            v-if="!page.props.auth.role.is_student"
-                        >
-                            <Link
-                                :href="route('transaction.index')"
-                                :active="route().current('transaction.index')"
-                            >
-                                <a-badge :count="page.props.notificationCount">
-                                    <!-- <a-avatar shape="square" size="large" /> -->
-                                    <BellFilled class="text-2xl" />
-                                </a-badge>
-                            </Link>
-                        </div>
+
                         <div class="ms-3 relative">
                             <Dropdown align="right" width="48">
                                 <template #trigger>

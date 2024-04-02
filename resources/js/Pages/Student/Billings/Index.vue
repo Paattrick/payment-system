@@ -47,29 +47,6 @@ const columns = ref([
     },
 ]);
 
-const columnsAdmission = ref([
-    {
-        title: "Name of Collection",
-        dataIndex: "name",
-        key: "name",
-    },
-    {
-        title: "Specific",
-        dataIndex: "meta",
-        key: "meta",
-    },
-    {
-        title: "Amount",
-        dataIndex: "amount",
-        key: "amount",
-    },
-    {
-        title: "Balance",
-        dataIndex: "balance",
-        key: "balance",
-    },
-]);
-
 const descriptionColumns = ref([
     {
         title: "Specific",
@@ -119,9 +96,9 @@ const remainingBalance = () => {
     let temp = 0;
     form.meta.map((e) => {
         e.meta.map((meta) => {
-            console.log(meta);
             if (meta.balance != "PAID") {
-                temp = Number(temp) + Number(meta.balance);
+                let toAdd = meta.balance == 0 ? meta.amount : meta.balance;
+                temp = Number(temp) + Number(toAdd);
             }
         });
     });
@@ -130,8 +107,16 @@ const remainingBalance = () => {
 };
 
 const submit = () => {
+    form.meta.map((e) => {
+        e.meta.map((meta) => {
+            if (meta.toPay != 0) {
+                meta.status = "pending";
+            }
+        });
+    });
     imageForm.post(
         route("billings-submit.store", {
+            student: page.props.auth.user.id,
             forceFormData: true,
             fees: form.meta,
             student: page.props.auth.user,
@@ -140,6 +125,7 @@ const submit = () => {
         {
             onSuccess: () => {
                 showQr.value = false;
+                showPaymentModal.value = false;
             },
         }
     );
@@ -167,6 +153,7 @@ const onSelectChange = (value) => {
                     id: e.id,
                     name: e.name,
                     meta: e.meta,
+                    status: "",
                 });
             }
         });
@@ -180,51 +167,73 @@ const uploadFile = () => {
 
 const payBillings = () => {
     form.meta.map((e) => {
-        e.meta.map((meta) => {
-            console.log(meta);
-            if (meta.toPay != 0) {
-                meta.toPay = 0;
+        selectedBillings.value.map((x) => {
+            if (e.id == x) {
+                e.meta.map((meta) => {
+                    if (meta.toPay != 0) {
+                        onlyPending.value = true;
+                    } else {
+                        onlyPending.value = false;
+                    }
+                });
             }
         });
     });
+
     showModal.value = true;
 };
 
+const onlyPending = ref(false);
+const hasError = ref(false);
+const showPaymentModal = ref(false);
+const totalToPay = ref(null);
+
 const handlePayment = () => {
-    // if (form.meta !== null) {
-    //     form.meta.map((x) => {
-    //         x.meta.map((meta) => {
-    //             if (Number(meta.balance) > 0) {
-    //                 if (
-    //                     Number(meta.balance) + Number(meta.toPay) >
-    //                     Number(meta.amount)
-    //                 ) {
-    //                     return message.error(
-    //                         `Your payment is greater than the exact amount`
-    //                     );
-    //                 }
-    //                 if (
-    //                     Number(meta.balance) + Number(meta.toPay) <=
-    //                     Number(meta.amount)
-    //                 ) {
-    //                     showQr.value = true;
-    //                 }
-    //             }
-    //             if (Number(meta.balance) == 0) {
-    //                 if (meta.toPay > meta.amount) {
-    //                     return message.error(
-    //                         `Your payment is greater than the exact amount`
-    //                     );
-    //                 }
-    //                 if (meta.toPay < meta.amount) {
-    //                     showQr.value = true;
-    //                 }
-    //             }
-    //         });
-    //     });
-    // }
-    showQr.value = true;
-    showModal.value = false;
+    if (form.meta !== null) {
+        form.meta.map((x) => {
+            x.meta.map((meta) => {
+                if (Number(meta.balance) != Number(meta.amount)) {
+                    let amount = Number(meta.balance) + Number(meta.toPay);
+                    if (amount > Number(meta.amount)) {
+                        hasError.value = true;
+                        console.log("1");
+                        return message.error(
+                            `Your payment is greater than the exact amount`
+                        );
+                    } else {
+                        hasError.value = false;
+                    }
+                }
+                if (Number(meta.balance) == Number(meta.amount)) {
+                    if (meta.toPay > meta.amount) {
+                        hasError.value = true;
+                        console.log("2");
+                        return message.error(
+                            `Your payment is greater than the exact amount`
+                        );
+                    } else {
+                        hasError.value = false;
+                    }
+                }
+            });
+        });
+    }
+
+    if (hasError.value == false) {
+        let temp = 0;
+        form.meta.map((e) => {
+            e.meta.map((meta) => {
+                if (meta.toPay != 0) {
+                    temp = Number(temp) + Number(meta.toPay);
+                }
+            });
+        });
+
+        totalToPay.value = temp;
+
+        showPaymentModal.value = true;
+        showModal.value = false;
+    }
 };
 
 const selectedImage = ref(null);
@@ -389,15 +398,30 @@ const onChangeFile = (event) => {
                                                     )
                                                 }}
                                             </div>
-                                            <div>
-                                                <a-input-number
-                                                    placeholder="0.00"
-                                                    :step="0.01"
-                                                    class="w-full"
-                                                    name="to_pay"
-                                                    v-model:value="val.toPay"
-                                                >
-                                                </a-input-number>
+                                            <div
+                                                v-if="val.status == 'pending'"
+                                                class="pt-1.5"
+                                            >
+                                                <span class="text-sm">
+                                                    You have a pending request
+                                                    on this
+                                                </span>
+                                            </div>
+                                            <div v-else>
+                                                <a-form>
+                                                    <a-form-item
+                                                        name="checkAmount"
+                                                    >
+                                                        <a-input-number
+                                                            type="number"
+                                                            placeholder="0.00"
+                                                            class="w-full"
+                                                            v-model:value="
+                                                                val.toPay
+                                                            "
+                                                        />
+                                                    </a-form-item>
+                                                </a-form>
                                             </div>
                                         </div>
                                     </div>
@@ -407,7 +431,11 @@ const onChangeFile = (event) => {
                     </a-table>
                 </div>
                 <div class="flex justify-end">
-                    <a-button @click="handlePayment()" type="primary">
+                    <a-button
+                        :disabled="onlyPending"
+                        @click="handlePayment()"
+                        type="primary"
+                    >
                         Okay
                     </a-button>
                 </div>
@@ -464,6 +492,116 @@ const onChangeFile = (event) => {
                     </div>
                 </a-modal>
             </div>
+            <a-modal
+                v-model:open="showPaymentModal"
+                :title="`Payment Details`"
+                :footer="null"
+            >
+                <div>
+                    <div v-for="(val, index) in form.meta" class="">
+                        <div v-for="(x, i) in val.meta" class="flex space-x-8">
+                            <a-card>
+                                <div
+                                    v-if="
+                                        x.toPay != 0 &&
+                                        x.balance !== 'PAID' &&
+                                        x.status != 'pending'
+                                    "
+                                >
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Name:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{ val.name }}
+                                            </div>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Specific:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{ x.clearance }}
+                                            </div>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Total Amount:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "PHP",
+                                                        {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                        }
+                                                    ).format(x.amount)
+                                                }}
+                                            </div>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                Balance:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "PHP",
+                                                        {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                        }
+                                                    ).format(x.balance)
+                                                }}
+                                            </div>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="flex space-x-4">
+                                            <div class="text-lg font-bold">
+                                                To Pay:
+                                            </div>
+                                            <div class="text-lg">
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "PHP",
+                                                        {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                        }
+                                                    ).format(x.toPay)
+                                                }}
+                                            </div>
+                                        </span>
+                                    </div>
+                                </div>
+                            </a-card>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-5">
+                        <div class="font-bold text-lg mr-5">
+                            Total Payment:
+                            {{
+                                new Intl.NumberFormat("PHP", {
+                                    style: "currency",
+                                    currency: "PHP",
+                                }).format(totalToPay)
+                            }}
+                        </div>
+                        <a-button @click="showQr = true" type="primary">
+                            Continue
+                        </a-button>
+                    </div>
+                </div>
+            </a-modal>
         </div>
     </AuthenticatedLayout>
 </template>
