@@ -500,7 +500,12 @@ const onChangeFile = (event) => {
                 <div>
                     <div v-for="(val, index) in form.meta" class="">
                         <div v-for="(x, i) in val.meta" class="flex space-x-8">
-                            <a-card>
+                            <a-card
+                                style="
+                                    border-bottom: 1px solid #808080;
+                                    width: 100%;
+                                "
+                            >
                                 <div
                                     v-if="
                                         x.toPay != 0 &&
@@ -510,30 +515,30 @@ const onChangeFile = (event) => {
                                 >
                                     <div>
                                         <span class="flex space-x-4">
-                                            <div class="text-lg font-bold">
+                                            <div class="text-sm font-bold">
                                                 Name:
                                             </div>
-                                            <div class="text-lg">
+                                            <div class="text-sm">
                                                 {{ val.name }}
                                             </div>
                                         </span>
                                     </div>
                                     <div>
                                         <span class="flex space-x-4">
-                                            <div class="text-lg font-bold">
+                                            <div class="text-sm font-bold">
                                                 Specific:
                                             </div>
-                                            <div class="text-lg">
+                                            <div class="text-sm">
                                                 {{ x.clearance }}
                                             </div>
                                         </span>
                                     </div>
                                     <div>
                                         <span class="flex space-x-4">
-                                            <div class="text-lg font-bold">
+                                            <div class="text-sm font-bold">
                                                 Total Amount:
                                             </div>
-                                            <div class="text-lg">
+                                            <div class="text-sm">
                                                 {{
                                                     new Intl.NumberFormat(
                                                         "PHP",
@@ -548,10 +553,10 @@ const onChangeFile = (event) => {
                                     </div>
                                     <div>
                                         <span class="flex space-x-4">
-                                            <div class="text-lg font-bold">
+                                            <div class="text-sm font-bold">
                                                 Balance:
                                             </div>
-                                            <div class="text-lg">
+                                            <div class="text-sm">
                                                 {{
                                                     new Intl.NumberFormat(
                                                         "PHP",
@@ -566,10 +571,10 @@ const onChangeFile = (event) => {
                                     </div>
                                     <div>
                                         <span class="flex space-x-4">
-                                            <div class="text-lg font-bold">
+                                            <div class="text-sm font-bold">
                                                 To Pay:
                                             </div>
-                                            <div class="text-lg">
+                                            <div class="text-sm">
                                                 {{
                                                     new Intl.NumberFormat(
                                                         "PHP",
@@ -588,7 +593,7 @@ const onChangeFile = (event) => {
                     </div>
                     <div class="flex justify-end pt-5">
                         <div class="font-bold text-lg mr-5">
-                            Total Payment:
+                            Total:
                             {{
                                 new Intl.NumberFormat("PHP", {
                                     style: "currency",

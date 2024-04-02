@@ -498,7 +498,9 @@ const remainingBalance = () => {
                                 <a-select
                                     v-model:value="form.section"
                                     :options="
-                                        form.grade > 10 ? strands() : sections()
+                                        form.grade > 10
+                                            ? strands()
+                                            : sections(form.grade)
                                     "
                                     :filter-option="
                                         (input, option) =>
@@ -519,38 +521,31 @@ const remainingBalance = () => {
                     <a-card title="Address" class="mt-4 bg-gray-200">
                         <div class="flex justify-between mx-auto space-x-4">
                             <a-form-item required label="Province">
-                                <a-input v-model:value="form.province" />
+                                <a-select
+                                    v-model:value="form.province"
+                                    style="width: 200px"
+                                >
+                                    <a-select-option value="Bohol"
+                                        >Bohol</a-select-option
+                                    >
+                                    <!-- Add other provinces as needed -->
+                                </a-select>
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.province"
                                 />
                             </a-form-item>
                             <a-form-item required label="Municipality">
-                                <!-- <a-input v-model:value="form.municipality" /> -->
                                 <a-select
-                                    v-model:value="value"
+                                    v-model:value="form.municipality"
                                     style="width: 200px"
-                                    @change="handleChangeMunicipality(value)"
+                                    @change="handleChangeMunicipality"
                                     allowClear
                                 >
-                                    <a-select-option value="Alicia"
-                                        >Alicia</a-select-option
-                                    >
-                                    <a-select-option value="Anda"
-                                        >Anda</a-select-option
-                                    >
-                                    <a-select-option value="Candijay"
-                                        >Candijay</a-select-option
-                                    >
-                                    <a-select-option value="Duero"
-                                        >Duero</a-select-option
-                                    >
                                     <a-select-option value="Guindulman"
                                         >Guindulman</a-select-option
                                     >
-                                    <a-select-option value="Jagna"
-                                        >Jagna</a-select-option
-                                    >
+                                    <!-- Add other municipalities in Bohol -->
                                 </a-select>
                                 <InputError
                                     class="mt-2"
@@ -558,7 +553,68 @@ const remainingBalance = () => {
                                 />
                             </a-form-item>
                             <a-form-item required label="Barangay">
-                                <a-input v-model:value="form.barangay" />
+                                <a-select
+                                    v-model:value="form.barangay"
+                                    style="width: 200px"
+                                    allowClear
+                                >
+                                    <a-select-option value="Basdio"
+                                        >Basdio</a-select-option
+                                    >
+                                    <a-select-option value="Bato"
+                                        >Bato</a-select-option
+                                    >
+                                    <a-select-option value="Bayong"
+                                        >Bayong</a-select-option
+                                    >
+                                    <a-select-option value="Biabas"
+                                        >Biabas</a-select-option
+                                    >
+                                    <a-select-option value="Bulawan"
+                                        >Bulawan</a-select-option
+                                    >
+                                    <a-select-option value="Cabantian"
+                                        >Cabantian</a-select-option
+                                    >
+                                    <a-select-option value="Canhaway"
+                                        >Canhaway</a-select-option
+                                    >
+                                    <a-select-option value="Cansiwang"
+                                        >Cansiwang</a-select-option
+                                    >
+                                    <a-select-option value="Catungawan Norte"
+                                        >Catungawan Norte</a-select-option
+                                    >
+                                    <a-select-option value="Catungawan Sur"
+                                        >Catungawan Sur</a-select-option
+                                    >
+                                    <a-select-option value="Guinacot"
+                                        >Guinacot</a-select-option
+                                    >
+                                    <a-select-option value="Guio‑ang"
+                                        >Guio‑ang</a-select-option
+                                    >
+                                    <a-select-option value="Lombog"
+                                        >Lombog</a-select-option
+                                    >
+                                    <a-select-option value="Mayuga"
+                                        >Mayuga</a-select-option
+                                    >
+                                    <a-select-option value="Sawang "
+                                        >Sawang
+                                    </a-select-option>
+                                    <a-select-option value="Tabajan "
+                                        >Tabajan
+                                    </a-select-option>
+                                    <a-select-option value="Tabunok"
+                                        >Tabunok</a-select-option
+                                    >
+                                    <a-select-option value="Trinidad"
+                                        >Trinidad</a-select-option
+                                    >
+
+                                    <!-- Add other barangays in Guindulman -->
+                                </a-select>
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.barangay"
