@@ -12,13 +12,54 @@ import {
     TeamOutlined,
     UserOutlined,
 } from "@ant-design/icons-vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { Link, usePage, useForm, router } from "@inertiajs/vue3";
 import { ref } from "vue";
+import axios from "axios";
 
 const showingNavigationDropdown = ref(false);
 const page = usePage();
 const collapsed = ref(false);
 const selectedKeys = ref([]);
+const showAddYearModal = ref(false);
+
+const yearForm = useForm({
+    date_from: null,
+    date_to: null,
+    status: "inactive",
+});
+
+const submitSchoolYear = () => {
+    yearForm.date_from = yearForm.date_from.format("YYYY");
+    yearForm.date_to = yearForm.date_to.format("YYYY");
+    yearForm.post(route("school-year.store"), {
+        onSuccess: () => {
+            yearForm.reset();
+            router.reload();
+        },
+    });
+};
+
+const dateSelected = ref(page.props.currentSchoolYear[0].name);
+
+const handleChangeDate = () => {
+    let id = null;
+    page.props.schoolYears.map((e) => {
+        if (e.name == dateSelected.value) {
+            id = e.id;
+        }
+    });
+    if (dateSelected == "select_date") {
+        dateSelected.value = null;
+    } else {
+        axios.put(route("school-year.update", id)).then((res) => {
+            if (res.status == 200) {
+                location.reload();
+            }
+        });
+    }
+};
+
+const focus = () => {};
 </script>
 
 <template>
@@ -236,7 +277,66 @@ const selectedKeys = ref([]);
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:ms-6 mr-5">
                         <!-- Settings Dropdown -->
-
+                        <a-select
+                            ref="select"
+                            v-model:value="dateSelected"
+                            style="width: 120px"
+                            @change="handleChangeDate"
+                            @focus="focus"
+                        >
+                            <a-select-option
+                                v-for="(date, index) in page.props.schoolYears"
+                                :index="index"
+                                :value="date.name"
+                            >
+                                {{ date.name }}
+                            </a-select-option>
+                            <a-select-option
+                                value="select_date"
+                                @click="showAddYearModal = true"
+                                >Add Year</a-select-option
+                            >
+                        </a-select>
+                        <a-modal
+                            v-model:open="showAddYearModal"
+                            title="Add School Year"
+                            :footer="null"
+                        >
+                            <a-form>
+                                <div class="mx-auto ml-8">
+                                    <div class="flex space-x-4">
+                                        <div>
+                                            <a-form-item label="from">
+                                                <a-date-picker
+                                                    v-model:value="
+                                                        yearForm.date_from
+                                                    "
+                                                    picker="year"
+                                                />
+                                            </a-form-item>
+                                        </div>
+                                        <div>-</div>
+                                        <div>
+                                            <a-form-item label="to">
+                                                <a-date-picker
+                                                    v-model:value="
+                                                        yearForm.date_to
+                                                    "
+                                                    picker="year"
+                                                />
+                                            </a-form-item>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a-form>
+                            <div class="flex justify-end">
+                                <a-button
+                                    type="primary"
+                                    @click="submitSchoolYear"
+                                    >Submit</a-button
+                                >
+                            </div>
+                        </a-modal>
                         <div class="ms-3 relative">
                             <Dropdown align="right" width="48">
                                 <template #trigger>

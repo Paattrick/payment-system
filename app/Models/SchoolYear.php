@@ -5,17 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Fee extends Model
+class SchoolYear extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'meta',
-        'school_year',
-        'name'
-    ];
-
-    protected $casts = [
-        'meta' => 'json',
+        'name',
+        'status'
     ];
 }

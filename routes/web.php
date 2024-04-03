@@ -11,6 +11,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\CollectorController;
 use App\Http\Controllers\UserHistoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SchoolYearController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect;
@@ -55,6 +56,7 @@ Route::middleware('auth')->group(function () {
 
         Route::put('/students/{student}/archive', [StudentController::class, 'archive'])->name('student.archive');
         Route::put('/students/{student}/archive-restore', [StudentController::class, 'archiveRestore'])->name('student.archive-restore');
+        
     });
 
 
@@ -75,10 +77,15 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/billings/{student}/submit-payment', [UserStudentController::class, 'submitPayment'])->name('submit-payment.store');
     Route::post('/billings/{student}/decline-payment', [UserStudentController::class, 'declinePayment'])->name('decline-payment.store');
+    Route::put('/billings/{student}/sync-fees', [UserStudentController::class, 'syncStudentFees'])->name('syncStudentFees.store');
+
+    Route::resource('/school-year', SchoolYearController::class);
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/export', [DashboardController::class, 'getExportType'])->name('dashboard.export');
 });
 
 Route::get('/student/login', [StudentController::class, 'login'])->name('student.login');
 Route::post('/student/create', [StudentController::class, 'create'])->name('student.create');
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 require __DIR__ . '/auth.php';

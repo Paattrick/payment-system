@@ -7,9 +7,9 @@ import {
     ExclamationCircleFilled,
     RestFilled,
 } from "@ant-design/icons-vue";
-import { useForm, router } from "@inertiajs/vue3";
+import { useForm, router, usePage } from "@inertiajs/vue3";
 import { Modal, message } from "ant-design-vue";
-import { h, ref } from "vue";
+import { h, ref, onMounted } from "vue";
 import TableComponent from "@/Components/Table.vue";
 const [modal] = Modal.useModal();
 
@@ -17,9 +17,12 @@ const props = defineProps({
     fees: Object,
 });
 
+const page = usePage();
+
 const form = useForm({
-    name: null,
     meta: [],
+    name: null,
+    school_year: null,
 });
 
 const clearance = ref("");
@@ -72,6 +75,10 @@ const descriptionColumns = ref([
     },
 ]);
 
+onMounted(() => {
+    setTable();
+});
+
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
@@ -82,38 +89,64 @@ const handleAdd = () => {
 };
 
 const handleCancel = () => {
+    refresh();
     form.reset();
     form.errors = {};
     showModal.value = false;
 };
 
-const addField = () => {
-    form.meta.push({
-        clearance: clearance.value,
-        amount: amount.value,
-        toPay: toPay.value,
-        balance: balance.value,
-        dateSubmitted: null,
-        status: null,
+const dataTable = ref({
+    meta: [],
+});
+
+const setTable = () => {
+    props.fees.data.map((e) => {
+        if (e.school_year == page.props.currentSchoolYear[0].name) {
+            dataTable.value.meta.push({
+                meta: e.meta,
+                name: e.name,
+                id: e.id,
+                school_year: e.school_year,
+            });
+        }
     });
-    clearance.value = null;
-    amount.value = 0;
+    console.log(dataTable.value);
+};
+
+const addField = () => {
+    if (!clearance.value) {
+        return message.error("Specific is required");
+    } else {
+        form.meta.push({
+            clearance: clearance.value,
+            amount: amount.value,
+            toPay: toPay.value,
+            balance: amount.value,
+            dateSubmitted: null,
+            status: null,
+        });
+        clearance.value = null;
+        amount.value = 0;
+    }
 };
 
 const removeField = (index) => {
     form.meta.splice(index, 1);
 };
 
+const handleSelectedId = ref(null);
+
 const handleEdit = (val) => {
-    Object.entries(val).forEach(([key, value]) => {
-        form[key] = value;
-    });
+    handleSelectedId.value = val.id;
+    form.meta = val.meta;
+    form.name = val.name;
 
     showModal.value = true;
     isEditing.value = true;
 };
 
 const submit = () => {
+    form.school_year = page.props.currentSchoolYear[0].name;
     form.post(route("fees.store"), {
         preserveScroll: true,
         preserveState: true,
@@ -125,7 +158,7 @@ const submit = () => {
 };
 
 const update = () => {
-    form.put(route("fees.update", form.id), {
+    form.put(route("fees.update", handleSelectedId.value), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
@@ -148,14 +181,7 @@ const handleDelete = (val) => {
 };
 
 const refresh = () => {
-    router.reload({
-        onStart: () => {
-            loading.value = true;
-        },
-        onFinish: () => {
-            loading.value = false;
-        },
-    });
+    location.reload();
 };
 </script>
 <template>
@@ -165,7 +191,7 @@ const refresh = () => {
 
             <div>
                 <TableComponent
-                    :dataSource="props.fees.data"
+                    :dataSource="dataTable.meta"
                     :columns="columns"
                     :isLoading="loading"
                 >
@@ -182,15 +208,19 @@ const refresh = () => {
                         </div>
                     </template>
                     <template #customColumn="slotProps">
+                        <template v-if="slotProps.column.dataIndex === 'name'">
+                            {{ slotProps.record.name }}
+                        </template>
                         <template v-if="slotProps.column.dataIndex === 'meta'">
-                            <div
-                                v-for="(val, i) in slotProps.record.meta"
-                                :key="i"
-                            >
-                                <div class="mb-2">
-                                    <ul class="list-disc">
-                                        <li>{{ val.clearance }}</li>
-                                    </ul>
+                            <div v-for="(val, i) in slotProps.record" :key="i">
+                                <div v-for="(meta, index) in val" :key="index">
+                                    <div class="mb-2">
+                                        <ul class="list-disc">
+                                            {{
+                                                meta.clearance
+                                            }}
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -210,6 +240,12 @@ const refresh = () => {
                                     }}
                                 </div>
                             </div>
+                        </template>
+                        <template v-if="slotProps.column.dataIndex === 'meta'">
+                            {{ slotProps.record.clearance }}
+                        </template>
+                        <template v-if="slotProps.column.dataIndex === 'meta'">
+                            {{ slotProps.record.clearance }}
                         </template>
                         <template
                             v-if="slotProps.column.dataIndex === 'actions'"

@@ -14,16 +14,20 @@ const props = defineProps({
 });
 
 const form = useForm({
-    meta: null,
+    meta: {},
 });
+const dataTable = ref({
+    meta: [],
+});
+
 const page = usePage();
 const isDisable = ref(false);
 const toPay = ref([]);
-console.log(page.props.auth.user.meta);
-form.meta = [...page.props.auth.user.meta];
-console.log(form.meta);
+const modeOfPayment = ref(null);
 
 onMounted(() => {
+    dataTable.value.meta = [...page.props.auth.user.meta];
+    setTable();
     remainingBalance();
 });
 
@@ -79,8 +83,69 @@ const imageForm = useForm({
 });
 const runningBalance = ref(null);
 
+const setTable = () => {
+    // page.props.auth.user.meta.map((e) => {
+    //     if (e.school_year != page.props.currentSchoolYear[0].name) {
+    //         dataTable.value.meta = [];
+    //     }
+    // });
+
+    if (page.props.auth.user.meta.length == 0) {
+        props.fees.data.map((e) => {
+            if (e.school_year == page.props.currentSchoolYear[0].name) {
+                dataTable.value.meta.push({
+                    meta: e.meta,
+                    name: e.name,
+                    id: e.id,
+                    school_year: e.school_year,
+                });
+            }
+        });
+        router.put(route("syncStudentFees.store", page.props.auth.user.id), {
+            meta: dataTable.value.meta,
+        });
+    }
+
+    let data = props.fees.data[props.fees.data.length - 1];
+
+    if (dataTable.value.meta.length != props.fees.data.length) {
+        let data = props.fees.data[props.fees.data.length - 1];
+        dataTable.value.meta.push({
+            meta: data.meta,
+            name: data.name,
+            id: data.id,
+            school_year: data.school_year,
+        });
+        router.put(route("syncStudentFees.store", page.props.auth.user.id), {
+            meta: dataTable.value.meta,
+        });
+        // dataTable.value.meta.forEach((fees) => {
+        //     props.fees.data.forEach((data) => {
+        //         if (Number(fees.id) != Number(data.id)) {
+        //             dataTable.value.meta.push({
+        //                 meta: e.meta,
+        //                 name: e.name,
+        //                 id: e.id,
+        //                 school_year: e.school_year,
+        //             });
+        //         }
+        //     });
+        // });
+
+        // console.log(temp);
+        // return dataTable.value.meta.length.find(c => c.id === county.toLowerCase())?.link
+
+        // router.put(route("syncStudentFees.store", page.props.auth.user.id), {
+        //     meta: dataTable.value.meta,
+        // });
+        console.log(dataTable.value, "test");
+    }
+
+    form.meta = dataTable.value;
+};
+
 const handleCancel = () => {
-    form.meta.map((e) => {
+    dataTable.value.meta.map((e) => {
         e.meta.map((meta) => {
             meta.toPay = 0;
         });
@@ -91,7 +156,7 @@ const handleCancel = () => {
 
 const remainingBalance = () => {
     let temp = 0;
-    form.meta.map((e) => {
+    dataTable.value.meta.map((e) => {
         e.meta.map((meta) => {
             if (meta.balance != "PAID") {
                 let toAdd = meta.balance == 0 ? meta.amount : meta.balance;
@@ -104,7 +169,7 @@ const remainingBalance = () => {
 };
 
 const submit = () => {
-    form.meta.map((e) => {
+    dataTable.value.meta.map((e) => {
         e.meta.map((meta) => {
             if (meta.toPay != 0) {
                 meta.status = "pending";
@@ -116,9 +181,13 @@ const submit = () => {
         route("billings-submit.store", {
             student: page.props.auth.user.id,
             forceFormData: true,
-            fees: form.meta,
+            fees: dataTable.value.meta,
             student: page.props.auth.user,
-            reference: reference.value,
+            reference:
+                modeOfPayment.value == "online"
+                    ? reference.value
+                    : `CASH-${page.props.auth.user.id_number}`,
+            type: modeOfPayment.value,
         }),
         {
             onSuccess: () => {
@@ -144,7 +213,7 @@ const onSelectChange = (value) => {
         isDisable.value = false;
     }
 
-    form.meta.map((e) => {
+    dataTable.value.meta.map((e) => {
         selectedBillings.value.map((x) => {
             if (e.id == x) {
                 toPay.value.push({
@@ -158,7 +227,7 @@ const onSelectChange = (value) => {
 };
 
 const payBillings = () => {
-    form.meta.map((e) => {
+    dataTable.value.meta.map((e) => {
         selectedBillings.value.map((x) => {
             if (e.id == x) {
                 e.meta.map((meta) => {
@@ -181,47 +250,47 @@ const showPaymentModal = ref(false);
 const totalToPay = ref(null);
 
 const handlePayment = () => {
-    if (form.meta !== null) {
-        form.meta.map((x) => {
-            x.meta.map((meta) => {
-                if (Number(meta.balance) != Number(meta.amount)) {
-                    if (Number(meta.toPay) > Number(meta.balance)) {
-                        hasError.value = true;
-                        form.errors = {
-                            payment:
-                                "Your payment is greater than the exact amount",
-                        };
-                        return;
-                    }
+    form.errors = {};
+
+    dataTable.value.meta.map((x) => {
+        x.meta.map((meta) => {
+            if (meta.balance == meta.amount) {
+                if (Number(meta.toPay) > Number(meta.balance)) {
+                    hasError.value = true;
+                    form.errors = {
+                        payment:
+                            "Your payment is greater than the exact amount",
+                    };
                 }
-                if (Number(meta.balance) == Number(meta.amount)) {
-                    if (Number(meta.toPay) > Number(meta.amount)) {
-                        console.log("2");
-                        hasError.value = true;
-                        form.errors = {
-                            payment:
-                                "Your payment is greater than the exact amount",
-                        };
-                        return;
-                    }
+            }
+            if (Number(meta.balance) != Number(meta.amount)) {
+                if (Number(meta.toPay) > Number(meta.balance)) {
+                    hasError.value = true;
+                    form.errors = {
+                        payment:
+                            "Your payment is greater than the exact amount",
+                    };
                 }
-            });
+            }
         });
-    }
+    });
 
     if (!form.errors.payment) {
         let temp = 0;
-        form.meta.map((e) => {
+        dataTable.value.meta.map((e) => {
             e.meta.map((meta) => {
-                if (meta.toPay != 0) {
+                if (meta.toPay != 0 && meta.status != "pending") {
                     temp = Number(temp) + Number(meta.toPay);
                 }
             });
         });
 
         totalToPay.value = temp;
-
-        showPaymentModal.value = true;
+        if (totalToPay.value == 0) {
+            showModal.value = false;
+        } else {
+            showPaymentModal.value = true;
+        }
     } else {
         message.error(form.errors.payment);
         onlyPending.value = true;
@@ -240,7 +309,7 @@ const onChangeAmount = (event) => {
             <div class="page-title height-md:mb-30">Fees</div>
             <div>
                 <TableComponent
-                    :dataSource="form.meta"
+                    :dataSource="dataTable.meta"
                     :columns="columns"
                     :isLoading="loading"
                     :hasRowSelection="true"
@@ -442,7 +511,47 @@ const onChangeAmount = (event) => {
                     title="Scan To Pay"
                     :footer="null"
                 >
-                    <a-form layout="vertical" enctype="multipart/form-data">
+                    <div class="mb-5">
+                        <a-select
+                            v-model:value="modeOfPayment"
+                            placeholder="Select Payment Type"
+                            class="w-full"
+                        >
+                            <a-select-option value="online">
+                                Gcash
+                            </a-select-option>
+                            <a-select-option value="cash">
+                                Cash on Hand
+                            </a-select-option>
+                        </a-select>
+                    </div>
+                    <a-form
+                        v-if="modeOfPayment == 'cash'"
+                        layout="vertical"
+                        enctype="multipart/form-data"
+                    >
+                        <div class="flex pl-0">
+                            <div>
+                                <a-form-item label="Reference No.">
+                                    <a-input
+                                        v-model:value="reference"
+                                        type="text"
+                                        :placeholder="`CASH-${page.props.auth.user.id_number}`"
+                                        disabled
+                                    />
+                                    <InputError
+                                        class="mt-2"
+                                        :message="page.props?.errors?.reference"
+                                    />
+                                </a-form-item>
+                            </div>
+                        </div>
+                    </a-form>
+                    <a-form
+                        v-if="modeOfPayment == 'online'"
+                        layout="vertical"
+                        enctype="multipart/form-data"
+                    >
                         <div class="flex pl-0">
                             <div>
                                 <img
@@ -477,7 +586,10 @@ const onChangeAmount = (event) => {
                             </div>
                         </div>
                     </a-form>
-                    <div class="flex justify-end pt-5">
+                    <div
+                        v-if="modeOfPayment != null"
+                        class="flex justify-end pt-5"
+                    >
                         <a-button
                             @click="submit()"
                             type="primary"
@@ -494,7 +606,7 @@ const onChangeAmount = (event) => {
                 :footer="null"
             >
                 <div>
-                    <div v-for="(val, index) in form.meta" class="">
+                    <div v-for="(val, index) in dataTable.meta" class="">
                         <div v-for="(x, i) in val.meta" class="flex space-x-8">
                             <div
                                 v-if="

@@ -35,7 +35,7 @@ class StudentController extends Controller
             ->paginate($request->per_page);
 
         $fees = Fee::query()
-            ->whereNotNull('name')
+            ->whereNotNull('meta')
             ->get();
 
         return Inertia::render('Admin/Students/List/Index', [

@@ -20,7 +20,7 @@ class UserStudentController extends Controller
         ]);
 
         $fees = Fee::query()
-            ->whereNotNull('name')
+            ->whereNotNull('meta')
             ->paginate($request->per_page);
 
         return Inertia::render('Student/Billings/Index', [
@@ -33,7 +33,7 @@ class UserStudentController extends Controller
         $validateFile = $request->validate([
             'reference' => 'required|unique:histories,reference'
         ]);
-
+        
         if($request->hasFile('image')) {
             $file = $request->file('image');
             $fileName = $file->getClientOriginalName();
@@ -54,6 +54,20 @@ class UserStudentController extends Controller
             ]);
         }
 
+        if($request->type == "cash") {
+            $history = History::create([
+                'student_id' => $student->id,
+                'name' => $student->name,
+                'meta' => $request->fees,
+                'status' => 'pending',
+                'reference' => $validateFile['reference']
+            ]);
+            
+            $student->update([
+                'meta' => $request->fees,
+            ]);
+        }
+
 
         return redirect()->back();
     }
@@ -67,8 +81,20 @@ class UserStudentController extends Controller
 
         $history = History::where('id', $request->transactionId)
             ->update([
-                'status' => 'accepted'
+                'status' => 'accepted',
+                'reference' => 'CASH-'. $request->transactionId
             ]);
+
+        $student->save();
+
+        return redirect()->back();
+    }
+
+    public function syncStudentFees(Request $request, User $student)
+    {
+        $student->update([
+            'meta' => $request->meta,
+        ]);
 
         $student->save();
 
@@ -80,8 +106,12 @@ class UserStudentController extends Controller
         $history = History::where('id', $request->transactionId)
             ->update([
                 'status' => 'declined',
-                'note' => $request->note
+                'note' => $request->note,
+                'reference' => 'CASH-'. $request->transactionId
             ]);
+        $student->update([
+            'meta' => $request->meta
+        ]);
 
         return redirect()->back();
     }

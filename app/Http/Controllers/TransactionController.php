@@ -18,6 +18,7 @@ class TransactionController extends Controller
         $transactions = History::query()
             ->whereNotNull('student_id')
             ->where('status', 'pending')
+            ->latest()
             ->paginate($request->per_page);
 
         return Inertia::render('Admin/Transactions/Index', [

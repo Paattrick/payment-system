@@ -2,8 +2,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, router, usePage } from "@inertiajs/vue3";
 import TableComponent from "@/Components/Table.vue";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { onMounted } from "vue";
+import { composables } from "@/Composables/index.js";
 
 const props = defineProps({
     students: Object,
@@ -11,8 +12,12 @@ const props = defineProps({
     archivedStudents: Number,
     history: Object,
 });
-
+const { sections, grades, strands } = composables();
 const page = usePage();
+const reportType = ref(null);
+const grade = ref(null);
+const section = ref(null);
+const status = ref(null);
 
 onMounted(() => {
     setInterval(refreshNotification, 5000);
@@ -66,6 +71,15 @@ const handleRedirectToStudents = () => {
 const handleCheckNotification = () => {
     router.visit(route("transaction.index"));
 };
+
+const exportLink = computed(() => {
+    return route("dashboard.export", {
+        type: reportType.value,
+        grade: grade.value,
+        section: section.value,
+        status: status.value,
+    });
+});
 </script>
 
 <template>
@@ -123,6 +137,88 @@ const handleCheckNotification = () => {
                             </a-card>
                         </a-col>
                     </a-row>
+                </div>
+
+                <div
+                    v-if="!page.props.auth.role.is_student"
+                    class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-5"
+                >
+                    <a-card title="Generate Report" class="w-full">
+                        <a-select class="w-full" v-model:value="reportType">
+                            <a-select-option
+                                value="generateTotalEnrolledStudents"
+                                >Generate Students Report</a-select-option
+                            >
+                            <!-- <a-select-option value="generateTotalMoneyCollected"
+                                >Total Money Collected</a-select-option
+                            > -->
+                        </a-select>
+                        <div
+                            class="mt-5 flex space-x-4"
+                            v-if="reportType == 'generateTotalEnrolledStudents'"
+                        >
+                            <div>
+                                <a-select
+                                    class="w-[200px]"
+                                    placeholder="Select Grade"
+                                    v-model:value="grade"
+                                    allowClear
+                                    :options="grades()"
+                                    :filter-option="
+                                        (input, option) =>
+                                            option.label
+                                                .toLowerCase()
+                                                .indexOf(input.toLowerCase()) >=
+                                            0
+                                    "
+                                >
+                                </a-select>
+                            </div>
+                            <div>
+                                <a-select
+                                    class="w-[200px]"
+                                    :placeholder="
+                                        Number(grade) > 10
+                                            ? 'Strand'
+                                            : 'Section'
+                                    "
+                                    v-model:value="section"
+                                    allowClear
+                                    :options="
+                                        Number(grade) > 10
+                                            ? strands()
+                                            : sections()
+                                    "
+                                    :filter-option="
+                                        (input, option) =>
+                                            option.label
+                                                .toLowerCase()
+                                                .indexOf(input.toLowerCase()) >=
+                                            0
+                                    "
+                                >
+                                </a-select>
+                            </div>
+                            <div>
+                                <a-select
+                                    v-model:value="status"
+                                    placeholder="Select Status"
+                                >
+                                    <a-select-option value="archived"
+                                        >Archived</a-select-option
+                                    >
+                                    <a-select-option value="active"
+                                        >Active</a-select-option
+                                    >
+                                </a-select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-5">
+                            <a target="_blank" :href="exportLink">
+                                <a-button type="primary"> Submit </a-button>
+                            </a>
+                        </div>
+                    </a-card>
                 </div>
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

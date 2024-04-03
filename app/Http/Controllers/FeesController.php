@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Fee;
+use App\Models\User;
 use App\Http\Resources\FeeResource;
 
 class FeesController extends Controller
@@ -19,7 +20,7 @@ class FeesController extends Controller
         ]);
 
         $fees = Fee::query()
-            ->whereNotNull('name')
+            ->whereNotNull('meta')
             ->paginate($request->per_page);
 
         return Inertia::render('Admin/Fees/Index', [
@@ -32,13 +33,15 @@ class FeesController extends Controller
      */
     public function store(Request $request)
     {
+        
         $validated = $request->validate([
             'name' => 'required|string|unique:fees,name'
         ]);
-
+        
         Fee::create([
-            'name' => $validated['name'],
-            'meta' => $request->meta
+            'meta' => $request->meta,
+            'school_year' => $request->school_year,
+            'name' => $validated['name']
         ]);
 
         return redirect()->back();
@@ -50,8 +53,7 @@ class FeesController extends Controller
     public function update(Request $request, Fee $fee)
     {
         $fee->update([
-            'name' => $request->name,
-            'meta' => $request->meta
+            'meta' => $request->fees
         ]);
 
         $fee->save();

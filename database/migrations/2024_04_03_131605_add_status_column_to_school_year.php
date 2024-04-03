@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('fees', function (Blueprint $table) {
-            $table->id();
-            $table->json('meta')->nullable();
-            $table->timestamps();
+        Schema::table('school_years', function (Blueprint $table) {
+            $table->string('status')->nullable();
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fees');
+        Schema::table('school_years', function (Blueprint $table) {
+            $table->dropColumn('status');
+        });
     }
 };

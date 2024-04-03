@@ -3,7 +3,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import InputError from "@/Components/InputError.vue";
 import TableComponent from "@/Components/Table.vue";
 import { ref, h } from "vue";
-import { useForm, router } from "@inertiajs/vue3";
+import { useForm, router, usePage } from "@inertiajs/vue3";
 import {
     RestFilled,
     EditFilled,
@@ -25,6 +25,7 @@ const props = defineProps({
 
 const { sections, grades, strands } = composables();
 
+const page = usePage();
 const form = useForm({
     last_name: null,
     name: null,
@@ -228,7 +229,13 @@ const handleChangeMunicipality = (val) => {
 };
 
 const showStudentFees = (val) => {
-    studentFees.value = [...val.meta];
+    val.meta.map((e) => {
+        if (e.school_year == page.props.currentSchoolYear[0].name) {
+            studentFees.value = [...val.meta];
+        } else {
+            studentFees.value = null;
+        }
+    });
     showStudentFeesModal.value = true;
 
     remainingBalance();
@@ -240,7 +247,6 @@ const remainingBalance = () => {
     let temp = 0;
     studentFees.value.map((e) => {
         e.meta.map((meta) => {
-            console.log(meta);
             if (meta.balance != "PAID") {
                 let toAdd = meta.balance == 0 ? meta.amount : meta.balance;
                 temp = Number(temp) + Number(toAdd);
