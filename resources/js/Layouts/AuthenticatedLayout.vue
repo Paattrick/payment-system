@@ -39,7 +39,11 @@ const submitSchoolYear = () => {
     });
 };
 
-const dateSelected = ref(page.props.currentSchoolYear[0].name);
+const dateSelected = ref(
+    page.props.currentSchoolYear.length > 0
+        ? page.props.currentSchoolYear[0].name
+        : null
+);
 
 const handleChangeDate = () => {
     let id = null;
@@ -48,7 +52,8 @@ const handleChangeDate = () => {
             id = e.id;
         }
     });
-    if (dateSelected == "select_date") {
+    console.log();
+    if (dateSelected.value == "select_date") {
         dateSelected.value = null;
     } else {
         axios.put(route("school-year.update", id)).then((res) => {
