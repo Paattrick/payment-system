@@ -14,6 +14,8 @@ import { composables } from "@/Composables/index.js";
 import { Modal, notification } from "ant-design-vue";
 import { watchDebounced } from "@vueuse/core";
 import { onMounted } from "vue";
+import moment from "moment";
+import "moment/dist/locale/zh-cn";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -163,6 +165,8 @@ const handleEdit = (val) => {
 
     showModal.value = true;
     isEditing.value = true;
+
+    calculateAge();
 };
 
 const submit = () => {
@@ -245,6 +249,18 @@ const remainingBalance = () => {
     });
 
     runningBalance.value = temp;
+};
+
+const calculateAge = () => {
+    const currentDate = new Date();
+
+    const diffTime = currentDate - new Date(form.birthday);
+    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    let years = Math.floor(totalDays / 365.25);
+    // let months = Math.floor((totalDays % 365.25) / 30.4375);
+    // let days = Math.floor((totalDays % 365.25) % 30.4375);
+
+    form.age = years + " ";
 };
 </script>
 <template>
@@ -424,14 +440,15 @@ const remainingBalance = () => {
                                 <a-date-picker
                                     v-model:value="form.birthday"
                                     format="YYYY/MM/DD"
+                                    @change="calculateAge"
                                 />
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.birthday"
                                 />
                             </a-form-item>
-                            <a-form-item required label="Age" name="age">
-                                <a-input v-model:value="form.age" />
+                            <a-form-item label="Age" name="age">
+                                <a-input v-model:value="form.age" disabled />
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.age"

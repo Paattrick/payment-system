@@ -1,27 +1,22 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
-import NavLink from "@/Components/NavLink.vue";
-import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
-import { Link, usePage, router } from "@inertiajs/vue3";
 import {
-    MenuUnfoldOutlined,
-    MenuFoldOutlined,
-    UserOutlined,
-    DashboardOutlined,
-    CreditCardOutlined,
-    HistoryOutlined,
-    TeamOutlined,
     ClockCircleOutlined,
+    CreditCardOutlined,
+    DashboardOutlined,
     DeleteOutlined,
-    BellFilled,
+    HistoryOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    TeamOutlined,
+    UserOutlined,
 } from "@ant-design/icons-vue";
+import { Link, usePage } from "@inertiajs/vue3";
+import { ref } from "vue";
 
 const showingNavigationDropdown = ref(false);
 const page = usePage();
-
 const collapsed = ref(false);
 const selectedKeys = ref([]);
 </script>
@@ -99,29 +94,41 @@ const selectedKeys = ref([]);
                             </Link></span
                         >
                     </a-menu-item>
-                    <a-menu-item
-                        key="4"
+
+                    <a-badge
                         v-if="
                             page.props.auth.role.is_admin ||
                             page.props.auth.role.is_employee
                         "
-                        :class="
-                            route().current('transaction.index')
-                                ? 'rounded-md bg-[#1677ff]'
-                                : ''
-                        "
+                        :count="page.props.notificationCount"
                     >
-                        <ClockCircleOutlined />
-                        <span>
-                            <Link
-                                :href="route('transaction.index')"
-                                :active="route().current('transaction.index')"
-                                class="text-white"
-                            >
-                                Payment Request
-                            </Link></span
+                        <a-menu-item
+                            key="4"
+                            v-if="
+                                page.props.auth.role.is_admin ||
+                                page.props.auth.role.is_employee
+                            "
+                            :class="
+                                route().current('transaction.index')
+                                    ? 'rounded-md bg-[#1677ff]'
+                                    : ''
+                            "
+                            class="text-white"
                         >
-                    </a-menu-item>
+                            <ClockCircleOutlined />
+                            <span>
+                                <Link
+                                    :href="route('transaction.index')"
+                                    :active="
+                                        route().current('transaction.index')
+                                    "
+                                    class="text-white"
+                                >
+                                    Payment Request
+                                </Link></span
+                            >
+                        </a-menu-item>
+                    </a-badge>
                     <a-menu-item
                         key="5"
                         :class="

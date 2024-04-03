@@ -11,6 +11,10 @@ import { useForm, router } from "@inertiajs/vue3";
 import { Modal, message } from "ant-design-vue";
 import { h, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
+import "dayjs/locale/en";
+import dayjs from "dayjs";
+import moment from "moment";
+import "moment/dist/locale/zh-cn";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -46,9 +50,14 @@ const columns = ref([
         key: "status",
     },
     {
-        title: "Order Id",
-        dataIndex: "id",
-        key: "id",
+        title: "Date",
+        dataIndex: "created_at",
+        key: "created_at",
+    },
+    {
+        title: "Reference No.",
+        dataIndex: "reference",
+        key: "reference",
     },
 ]);
 
@@ -160,6 +169,29 @@ const viewNote = (val) => {
     note.value = val.note;
     showNoteModal.value = true;
 };
+
+const formatDate = (date, localTimeZone = false, format = null) => {
+    if (localTimeZone) {
+        return dayjs.format(format ? format : "M/D/YY [at] h:mm A z");
+    }
+    return dayjs(date).format("MMM DD YYYY h:mm A");
+};
+
+const handleChange = (event) => {
+    router.get(
+        window.location.pathname,
+        {
+            page: event.current,
+        },
+        {
+            replace: true,
+            preserveState: true,
+            preserveScroll: true,
+            onStart: () => (loading.value = true),
+            onFinish: () => (loading.value = false),
+        }
+    );
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -171,6 +203,7 @@ const viewNote = (val) => {
                     :dataSource="props.histories.data"
                     :columns="columns"
                     :isLoading="loading"
+                    @change="handleChange"
                 >
                     <template #actionButtons>
                         <div class="flex justify-between">
@@ -185,6 +218,15 @@ const viewNote = (val) => {
                         >
                             {{ slotProps.record.name }}
                             {{ "Submitted a Payment" }}
+                        </template>
+                        <template
+                            v-if="slotProps.column.dataIndex === 'created_at'"
+                        >
+                            {{
+                                moment(slotProps.record.created_at).format(
+                                    "DD-MM-YYYY h:mm "
+                                )
+                            }}
                         </template>
                         <template
                             v-if="slotProps.column.dataIndex === 'status'"

@@ -71,7 +71,7 @@ class StudentController extends Controller
                 'province' => 'required|string',
                 'municipality' => 'required|string',
                 'barangay' => 'required|string',
-                'id_number' => 'required|string',
+                'id_number' => 'required|string|unique:users,id_number',
                 'password' => 'nullable|max:255|same:confirmation',
                 'confirmation' => 'nullable|same:password',
                 'meta' => 'nullable'

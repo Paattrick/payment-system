@@ -1,16 +1,13 @@
 <script setup>
 import InputError from "@/Components/InputError.vue";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import {
-    DeleteFilled,
-    EditFilled,
-    ExclamationCircleFilled,
-    RestFilled,
-} from "@ant-design/icons-vue";
-import { useForm, router } from "@inertiajs/vue3";
-import { Modal, message } from "ant-design-vue";
-import { h, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { DeleteFilled, ExclamationCircleFilled } from "@ant-design/icons-vue";
+import { router, useForm } from "@inertiajs/vue3";
+import { Modal, message } from "ant-design-vue";
+import moment from "moment";
+import "moment/dist/locale/zh-cn";
+import { h, ref } from "vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -44,9 +41,14 @@ const columns = ref([
         key: "status",
     },
     {
-        title: "Order Id",
-        dataIndex: "id",
-        key: "id",
+        title: "Date",
+        dataIndex: "created_at",
+        key: "created_at",
+    },
+    {
+        title: "Reference No.",
+        dataIndex: "reference",
+        key: "reference",
     },
 ]);
 
@@ -153,6 +155,22 @@ const refresh = () => {
         },
     });
 };
+
+const handleChange = (event) => {
+    router.get(
+        window.location.pathname,
+        {
+            page: event.current,
+        },
+        {
+            replace: true,
+            preserveState: true,
+            preserveScroll: true,
+            onStart: () => (loading.value = true),
+            onFinish: () => (loading.value = false),
+        }
+    );
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -164,6 +182,8 @@ const refresh = () => {
                     :dataSource="props.histories.data"
                     :columns="columns"
                     :isLoading="loading"
+                    :paginationData="props.histories.meta"
+                    @change="handleChange"
                 >
                     <template #actionButtons>
                         <div class="flex justify-between">
@@ -178,6 +198,15 @@ const refresh = () => {
                         >
                             {{ slotProps.record.name }}
                             {{ "Submitted a Payment" }}
+                        </template>
+                        <template
+                            v-if="slotProps.column.dataIndex === 'created_at'"
+                        >
+                            {{
+                                moment(slotProps.record.created_at).format(
+                                    "DD-MM-YYYY HH:mm "
+                                )
+                            }}
                         </template>
                         <template
                             v-if="slotProps.column.dataIndex === 'status'"

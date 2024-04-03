@@ -5,6 +5,8 @@ import { Modal, message } from "ant-design-vue";
 import { onMounted, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
 import InputError from "@/Components/InputError.vue";
+import moment from "moment";
+import "moment/dist/locale/zh-cn";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -17,8 +19,9 @@ const form = useForm({
 const page = usePage();
 const isDisable = ref(false);
 const toPay = ref([]);
-
+console.log(page.props.auth.user.meta);
 form.meta = [...page.props.auth.user.meta];
+console.log(form.meta);
 
 onMounted(() => {
     remainingBalance();
@@ -67,7 +70,6 @@ const isEditing = ref(false);
 const loading = ref(false);
 const selectedBillings = ref([]);
 const showQr = ref(false);
-const showFileModal = ref(false);
 const file = ref(null);
 const submitLoading = ref(false);
 const showAdmission = ref(false);
@@ -78,18 +80,13 @@ const imageForm = useForm({
 const runningBalance = ref(null);
 
 const handleCancel = () => {
-    // form.reset();
-    // form.errors = {};
-    showModal.value = false;
-};
-
-const handleEdit = (val) => {
-    Object.entries(val).forEach(([key, value]) => {
-        form[key] = value;
+    form.meta.map((e) => {
+        e.meta.map((meta) => {
+            meta.toPay = 0;
+        });
     });
-
-    showModal.value = true;
-    isEditing.value = true;
+    form.errors = {};
+    showModal.value = false;
 };
 
 const remainingBalance = () => {
@@ -114,6 +111,7 @@ const submit = () => {
             }
         });
     });
+
     imageForm.post(
         route("billings-submit.store", {
             student: page.props.auth.user.id,
@@ -126,11 +124,11 @@ const submit = () => {
             onSuccess: () => {
                 showQr.value = false;
                 showPaymentModal.value = false;
+                showModal.value = false;
+                refresh();
             },
         }
     );
-
-    showFileModal.value = false;
 };
 
 const refresh = () => {
@@ -153,16 +151,10 @@ const onSelectChange = (value) => {
                     id: e.id,
                     name: e.name,
                     meta: e.meta,
-                    status: "",
                 });
             }
         });
     });
-};
-
-const uploadFile = () => {
-    showQr.value = false;
-    showFileModal.value = true;
 };
 
 const payBillings = () => {
@@ -193,33 +185,31 @@ const handlePayment = () => {
         form.meta.map((x) => {
             x.meta.map((meta) => {
                 if (Number(meta.balance) != Number(meta.amount)) {
-                    let amount = Number(meta.balance) + Number(meta.toPay);
-                    if (amount > Number(meta.amount)) {
+                    if (Number(meta.toPay) > Number(meta.balance)) {
                         hasError.value = true;
-                        console.log("1");
-                        return message.error(
-                            `Your payment is greater than the exact amount`
-                        );
-                    } else {
-                        hasError.value = false;
+                        form.errors = {
+                            payment:
+                                "Your payment is greater than the exact amount",
+                        };
+                        return;
                     }
                 }
                 if (Number(meta.balance) == Number(meta.amount)) {
-                    if (meta.toPay > meta.amount) {
-                        hasError.value = true;
+                    if (Number(meta.toPay) > Number(meta.amount)) {
                         console.log("2");
-                        return message.error(
-                            `Your payment is greater than the exact amount`
-                        );
-                    } else {
-                        hasError.value = false;
+                        hasError.value = true;
+                        form.errors = {
+                            payment:
+                                "Your payment is greater than the exact amount",
+                        };
+                        return;
                     }
                 }
             });
         });
     }
 
-    if (hasError.value == false) {
+    if (!form.errors.payment) {
         let temp = 0;
         form.meta.map((e) => {
             e.meta.map((meta) => {
@@ -232,21 +222,22 @@ const handlePayment = () => {
         totalToPay.value = temp;
 
         showPaymentModal.value = true;
-        showModal.value = false;
+    } else {
+        message.error(form.errors.payment);
+        onlyPending.value = true;
     }
 };
 
 const selectedImage = ref(null);
 
-const onChangeFile = (event) => {
-    console.log(event.target.files[0]);
-    selectedImage.value = event.target.files[0];
+const onChangeAmount = (event) => {
+    onlyPending.value = false;
 };
 </script>
 <template>
     <AuthenticatedLayout>
         <div>
-            <div class="page-title height-md:mb-30">Billings</div>
+            <div class="page-title height-md:mb-30">Fees</div>
             <div>
                 <TableComponent
                     :dataSource="form.meta"
@@ -419,6 +410,11 @@ const onChangeFile = (event) => {
                                                             v-model:value="
                                                                 val.toPay
                                                             "
+                                                            @change="
+                                                                onChangeAmount(
+                                                                    $event
+                                                                )
+                                                            "
                                                         />
                                                     </a-form-item>
                                                 </a-form>
@@ -500,23 +496,23 @@ const onChangeFile = (event) => {
                 <div>
                     <div v-for="(val, index) in form.meta" class="">
                         <div v-for="(x, i) in val.meta" class="flex space-x-8">
-                            <a-card
-                                style="
-                                    border-bottom: 1px solid #808080;
-                                    width: 100%;
+                            <div
+                                v-if="
+                                    x.toPay != 0 &&
+                                    x.balance !== 'PAID' &&
+                                    x.status != 'pending'
                                 "
                             >
-                                <div
-                                    v-if="
-                                        x.toPay != 0 &&
-                                        x.balance !== 'PAID' &&
-                                        x.status != 'pending'
+                                <a-card
+                                    style="
+                                        border-bottom: 1px solid #808080;
+                                        width: 100%;
                                     "
                                 >
                                     <div>
                                         <span class="flex space-x-4">
                                             <div class="text-sm font-bold">
-                                                Name:
+                                                Name of collection:
                                             </div>
                                             <div class="text-sm">
                                                 {{ val.name }}
@@ -587,8 +583,8 @@ const onChangeFile = (event) => {
                                             </div>
                                         </span>
                                     </div>
-                                </div>
-                            </a-card>
+                                </a-card>
+                            </div>
                         </div>
                     </div>
                     <div class="flex justify-end pt-5">

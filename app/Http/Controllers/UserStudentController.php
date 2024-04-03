@@ -41,8 +41,8 @@ class UserStudentController extends Controller
             Storage::disk('local')->put($path, file_get_contents($file));
 
             $history = History::create([
-                'student_id' => $request->student['id'],
-                'name' => $request->student['name'],
+                'student_id' => $student->id,
+                'name' => $student->name,
                 'meta' => $request->fees,
                 'file' => $fileName,
                 'status' => 'pending',

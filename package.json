@@ -25,6 +25,7 @@
         "apexcharts": "^3.48.0",
         "dayjs": "^1.11.10",
         "flowbite": "^2.3.0",
+        "moment": "^2.30.1",
         "vue-core-image-upload": "^2.4.14"
     }
 }

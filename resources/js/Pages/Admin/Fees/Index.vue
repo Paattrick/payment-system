@@ -93,6 +93,8 @@ const addField = () => {
         amount: amount.value,
         toPay: toPay.value,
         balance: balance.value,
+        dateSubmitted: null,
+        status: null,
     });
     clearance.value = null;
     amount.value = 0;
@@ -242,7 +244,7 @@ const refresh = () => {
                 :width="600"
             >
                 <a-form :model="form" name="basic" layout="vertical">
-                    <a-form-item required label="Name">
+                    <a-form-item required label="Name of collection">
                         <a-input v-model:value="form.name" />
                         <InputError class="mt-2" :message="form.errors.name" />
                     </a-form-item>

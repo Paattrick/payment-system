@@ -125,6 +125,12 @@ const showReceiptModal = () => {
 };
 
 const submitDecline = () => {
+    meta.value.map((e) => {
+        e.meta.map((meta) => {
+            meta.toPay = 0;
+            meta.status = "";
+        });
+    });
     router.post(
         route("decline-payment.store", selectedStudentId.value),
         {
@@ -146,13 +152,14 @@ const submitDecline = () => {
 <template>
     <AuthenticatedLayout>
         <div>
-            <div class="page-title height-md:mb-30">Transactions</div>
+            <div class="page-title height-md:mb-30">Payment Request</div>
 
             <div>
                 <TableComponent
                     :dataSource="props.transactions.data"
                     :columns="columns"
                     :isLoading="loading"
+                    :paginationData="props.transactions.meta"
                 >
                     <template #actionButtons>
                         <div class="flex justify-between">
