@@ -15,6 +15,7 @@ import {
 import { Link, usePage, useForm, router } from "@inertiajs/vue3";
 import { ref } from "vue";
 import axios from "axios";
+import dayjs from "dayjs";
 
 const showingNavigationDropdown = ref(false);
 const page = usePage();
@@ -29,12 +30,12 @@ const yearForm = useForm({
 });
 
 const submitSchoolYear = () => {
-    yearForm.date_from = yearForm.date_from.format("YYYY");
-    yearForm.date_to = yearForm.date_to.format("YYYY");
+    yearForm.date_from = dayjs(yearForm.date_from).format("YYYY");
+    yearForm.date_to = dayjs(yearForm.date_to).format("YYYY");
     yearForm.post(route("school-year.store"), {
         onSuccess: () => {
             yearForm.reset();
-            router.reload();
+            location.reload();
         },
     });
 };
@@ -52,9 +53,12 @@ const handleChangeDate = () => {
             id = e.id;
         }
     });
-    console.log();
+
     if (dateSelected.value == "select_date") {
-        dateSelected.value = null;
+        dateSelected.value =
+            page.props.currentSchoolYear.length > 0
+                ? page.props.currentSchoolYear[0].name
+                : null;
     } else {
         axios.put(route("school-year.update", id)).then((res) => {
             if (res.status == 200) {
@@ -64,7 +68,9 @@ const handleChangeDate = () => {
     }
 };
 
-const focus = () => {};
+const focus = () => {
+    console.log("focus");
+};
 </script>
 
 <template>
@@ -297,6 +303,7 @@ const focus = () => {};
                                 {{ date.name }}
                             </a-select-option>
                             <a-select-option
+                                v-if="page.props.auth.role.is_admin"
                                 value="select_date"
                                 @click="showAddYearModal = true"
                                 >Add Year</a-select-option

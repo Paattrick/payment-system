@@ -19,9 +19,9 @@ const grade = ref(null);
 const section = ref(null);
 const status = ref(null);
 
-onMounted(() => {
-    setInterval(refreshNotification, 5000);
-});
+// onMounted(() => {
+//     setInterval(refreshNotification, 5000);
+// });
 
 const refreshNotification = () => {
     router.reload({ only: ["history"] });
