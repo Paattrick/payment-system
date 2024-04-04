@@ -186,7 +186,7 @@ const submit = () => {
             reference:
                 modeOfPayment.value == "online"
                     ? reference.value
-                    : `CASH-${page.props.auth.user.id_number}`,
+                    : `CASH-${Math.ceil(Math.random() * 1000000)}`,
             type: modeOfPayment.value,
         }),
         {
@@ -536,7 +536,9 @@ const onChangeAmount = (event) => {
                                     <a-input
                                         v-model:value="reference"
                                         type="text"
-                                        :placeholder="`CASH-${page.props.auth.user.id_number}`"
+                                        :placeholder="`CASH-${Math.ceil(
+                                            Math.random() * 1000000
+                                        )}`"
                                         disabled
                                     />
                                     <InputError

@@ -46,7 +46,8 @@ class UserStudentController extends Controller
                 'meta' => $request->fees,
                 'file' => $fileName,
                 'status' => 'pending',
-                'reference' => $validateFile['reference']
+                'reference' => $validateFile['reference'],
+                'mode_of_payment' => $request->type
             ]);
 
             $student->update([
@@ -60,7 +61,8 @@ class UserStudentController extends Controller
                 'name' => $student->name,
                 'meta' => $request->fees,
                 'status' => 'pending',
-                'reference' => $validateFile['reference']
+                'reference' => $validateFile['reference'],
+                'mode_of_payment' => $request->type
             ]);
             
             $student->update([
@@ -74,7 +76,6 @@ class UserStudentController extends Controller
 
     public function submitPayment(Request $request, User $student)
     {
-       
         $student->update([
             'meta' => $request->meta,
         ]);
@@ -82,7 +83,7 @@ class UserStudentController extends Controller
         $history = History::where('id', $request->transactionId)
             ->update([
                 'status' => 'accepted',
-                'reference' => 'CASH-'. $request->transactionId
+                'reference' =>  $request->type == 'cash' ? 'CASH-'. $request->transactionId : $request->reference
             ]);
 
         $student->save();
@@ -107,8 +108,9 @@ class UserStudentController extends Controller
             ->update([
                 'status' => 'declined',
                 'note' => $request->note,
-                'reference' => 'CASH-'. $request->transactionId
+                'reference' => $request->type == 'cash' ? 'CASH-'. $request->transactionId : $request->reference
             ]);
+
         $student->update([
             'meta' => $request->meta
         ]);

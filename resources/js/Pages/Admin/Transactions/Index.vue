@@ -73,6 +73,8 @@ const submit = () => {
         {
             meta: meta.value,
             transactionId: transactionId.value,
+            type: type.value,
+            reference: reference.value,
         },
         {
             preserveScroll: true,
@@ -96,8 +98,9 @@ const refresh = () => {
 };
 
 const reference = ref(null);
-
+const type = ref(null);
 const viewPayment = (val) => {
+    type.value = val.mode_of_payment;
     reference.value = val.reference;
     selectedFile.value = val.file;
     meta.value = val.meta;
@@ -137,6 +140,8 @@ const submitDecline = () => {
             meta: meta.value,
             transactionId: transactionId.value,
             note: note.value,
+            type: type.value,
+            reference: reference.value,
         },
         {
             preserveScroll: true,

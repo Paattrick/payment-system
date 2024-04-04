@@ -16,7 +16,8 @@ class History extends Model
         'meta',
         'status',
         'reference',
-        'note'
+        'note',
+        'mode_of_payment'
     ];
 
     protected $casts = [
