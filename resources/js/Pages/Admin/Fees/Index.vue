@@ -146,6 +146,9 @@ const handleEdit = (val) => {
 };
 
 const submit = () => {
+    if (form.meta.length == 0) {
+        return message.error("Specific is required");
+    }
     form.school_year = page.props.currentSchoolYear[0].name;
     form.post(route("fees.store"), {
         preserveScroll: true,
