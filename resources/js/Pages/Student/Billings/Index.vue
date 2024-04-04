@@ -302,6 +302,12 @@ const selectedImage = ref(null);
 const onChangeAmount = (event) => {
     onlyPending.value = false;
 };
+
+const handleChangeModePayment = () => {
+    if (modeOfPayment.value == "cash") {
+        reference.value = `CASH-${Math.ceil(Math.random() * 1000000)}`;
+    }
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -516,6 +522,7 @@ const onChangeAmount = (event) => {
                             v-model:value="modeOfPayment"
                             placeholder="Select Payment Type"
                             class="w-full"
+                            @change="handleChangeModePayment"
                         >
                             <a-select-option value="online">
                                 Gcash
@@ -536,9 +543,6 @@ const onChangeAmount = (event) => {
                                     <a-input
                                         v-model:value="reference"
                                         type="text"
-                                        :placeholder="`CASH-${Math.ceil(
-                                            Math.random() * 1000000
-                                        )}`"
                                         disabled
                                     />
                                     <InputError
