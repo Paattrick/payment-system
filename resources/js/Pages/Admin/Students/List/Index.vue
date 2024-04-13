@@ -13,7 +13,7 @@ import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
 import { Modal, notification } from "ant-design-vue";
 import { watchDebounced } from "@vueuse/core";
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
 import moment from "moment";
 import "moment/dist/locale/zh-cn";
 const [modal] = Modal.useModal();
@@ -21,6 +21,7 @@ const [modal] = Modal.useModal();
 const props = defineProps({
     students: Object,
     fees: Object,
+    grades: Object,
 });
 
 const { sections, grades, strands } = composables();
@@ -51,6 +52,7 @@ const search = ref(null);
 const loading = ref(false);
 const grade = ref(null);
 const section = ref(null);
+const testSections = ref([]);
 
 watchDebounced(
     [search, grade, section],
@@ -78,6 +80,50 @@ watchDebounced(
     {
         debounce: 300,
     }
+);
+
+watch(grade, async (newValue, oldValue) => {
+    if (newValue != oldValue) {
+        testSections.value = [];
+    }
+    props.grades.map((e) => {
+        if (newValue == e.grade) {
+            e.sections.forEach((section) => {
+                testSections.value.push({
+                    label: section,
+                    value: section,
+                });
+            });
+        }
+    });
+
+    if (newValue == "" || newValue == null) {
+        testSections.value = [];
+    }
+});
+
+watch(
+    () => form.grade,
+    async (newValue, oldValue) => {
+        if (newValue != oldValue) {
+            testSections.value = [];
+        }
+        props.grades.map((e) => {
+            if (newValue == e.grade) {
+                e.sections.forEach((section) => {
+                    testSections.value.push({
+                        label: section,
+                        value: section,
+                    });
+                });
+            }
+        });
+
+        if (newValue == "" || newValue == null) {
+            testSections.value = [];
+        }
+    },
+    { deep: true }
 );
 
 const columns = ref([
@@ -148,6 +194,7 @@ const isEditing = ref(false);
 const handleAdd = () => {
     showModal.value = true;
     isEditing.value = false;
+    testSections.value = [];
 };
 
 const handleCancel = () => {
@@ -296,7 +343,12 @@ const calculateAge = () => {
                                         placeholder="Select Grade"
                                         v-model:value="grade"
                                         allowClear
-                                        :options="grades()"
+                                        :options="
+                                            props.grades.map((item) => ({
+                                                value: item.grade,
+                                                label: item.grade,
+                                            }))
+                                        "
                                         :filter-option="
                                             (input, option) =>
                                                 option.label
@@ -318,11 +370,7 @@ const calculateAge = () => {
                                         "
                                         v-model:value="section"
                                         allowClear
-                                        :options="
-                                            Number(grade) > 10
-                                                ? strands()
-                                                : sections()
-                                        "
+                                        :options="testSections"
                                         :filter-option="
                                             (input, option) =>
                                                 option.label
@@ -498,7 +546,12 @@ const calculateAge = () => {
                             >
                                 <a-select
                                     v-model:value="form.grade"
-                                    :options="grades()"
+                                    :options="
+                                        props.grades.map((item) => ({
+                                            value: item.grade,
+                                            label: item.grade,
+                                        }))
+                                    "
                                     :filter-option="
                                         (input, option) =>
                                             option.label
@@ -520,11 +573,7 @@ const calculateAge = () => {
                             >
                                 <a-select
                                     v-model:value="form.section"
-                                    :options="
-                                        form.grade > 10
-                                            ? strands()
-                                            : sections(form.grade)
-                                    "
+                                    :options="testSections"
                                     :filter-option="
                                         (input, option) =>
                                             option.label

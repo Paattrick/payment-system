@@ -268,6 +268,26 @@ const focus = () => {
                             </Link></span
                         >
                     </a-menu-item>
+                    <a-menu-item
+                        key="7"
+                        v-if="page.props.auth.role.is_admin"
+                        :class="
+                            route().current('grades.index')
+                                ? 'rounded-md bg-[#1677ff]'
+                                : ''
+                        "
+                    >
+                        <DeleteOutlined />
+                        <span>
+                            <Link
+                                :href="route('grades.index')"
+                                :active="route().current('grades.index')"
+                                class="text-white"
+                            >
+                                Grade and Sections
+                            </Link></span
+                        >
+                    </a-menu-item>
                 </a-menu>
             </a-menu>
         </a-layout-sider>

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Http\Resources\StudentResource;
 use Illuminate\Validation\Rule;
 use App\Models\Fee;
+use App\Models\Grade;
 use App\Http\Resources\FeeResource;
 
 class StudentController extends Controller
@@ -38,9 +39,15 @@ class StudentController extends Controller
             ->whereNotNull('meta')
             ->get();
 
+        $grades = Grade::query()
+            ->whereNotNull('grade')
+            ->orderBy('grade')
+            ->get();
+
         return Inertia::render('Admin/Students/List/Index', [
             'students' => StudentResource::collection($students),
-            'fees' => FeeResource::collection($fees)
+            'fees' => FeeResource::collection($fees),
+            'grades' => $grades
         ]);
     }
 

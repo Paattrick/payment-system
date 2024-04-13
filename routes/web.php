@@ -12,6 +12,7 @@ use App\Http\Controllers\CollectorController;
 use App\Http\Controllers\UserHistoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SchoolYearController;
+use App\Http\Controllers\GradeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect;
@@ -53,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('/fees', FeesController::class);
         Route::resource('/archives', ArchiveController::class);
         Route::resource('/students', StudentController::class);
+        Route::resource('/grades', GradeController::class);
 
         Route::put('/students/{student}/archive', [StudentController::class, 'archive'])->name('student.archive');
         Route::put('/students/{student}/archive-restore', [StudentController::class, 'archiveRestore'])->name('student.archive-restore');
