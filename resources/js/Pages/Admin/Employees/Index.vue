@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
 import { Modal } from "ant-design-vue";
 import { watchDebounced } from "@vueuse/core";
+import { onMounted, watch } from "vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -101,6 +102,98 @@ watchDebounced(
     }
 );
 
+watch(
+    () => form.contact_number,
+    (newValue, oldValue) => {
+        // Remove non-numeric characters from the input
+        const numericValue = newValue.replace(/\D/g, '');
+
+        // Check if the resulting value is an integer
+        if (!Number.isInteger(Number(numericValue))) {
+            // If it's not an integer, it's an invalid input
+            console.error('Error: Contact number must be an integer.');
+            // Optionally, reset the input to its previous value
+            form.contact_number = oldValue;
+            return; // Exit the watcher
+        }
+        
+        // Check if the length exceeds 11 digits
+        if (numericValue.length > 11) {
+            console.error('Error: Contact number cannot exceed 11 digits.');
+            // Truncate the input to 11 digits
+            form.contact_number = numericValue.slice(0, 11);
+        } else {
+            // Update the form data with the cleaned numeric value
+            form.contact_number = numericValue;
+        }
+    },
+    { deep: true }
+);
+
+watch(
+    () => form.id_number,
+    (newValue, oldValue) => {
+        // Remove non-numeric characters from the input
+        const numericValue = newValue.replace(/\D/g, '');
+
+        // Check if the resulting value is an integer
+        if (!Number.isInteger(Number(numericValue))) {
+            // If it's not an integer, it's an invalid input
+            console.error('Error: ID number must be an integer.');
+            // Optionally, reset the input to its previous value
+            form.id_number = oldValue;
+            return; // Exit the watcher
+        }
+        
+        // Update the form data with the cleaned numeric value
+        form.id_number = numericValue;
+    },
+    { deep: true }
+);
+
+
+watch(
+    () => form.name,
+    (newValue, oldValue) => {
+        // Check if the new value is empty (allows deletion)
+        if (newValue === '') {
+            // Update the form data with the empty value
+            form.name = newValue;
+            return;
+        }
+
+        // Check if the new value contains only alphabetical characters
+        if (!/^[a-zA-Z\s]+$/.test(newValue)) {
+            // If it contains non-alphabetical characters, it's an invalid input
+            console.error('Error: First name cannot contain numeric characters.');
+            // Reset the input to its previous value
+            form.name = oldValue;
+        }
+    },
+    { deep: true }
+);
+
+watch(
+    () => form.last_name,
+    (newValue, oldValue) => {
+        // Check if the new value is empty (allows deletion)
+        if (newValue === '') {
+            // Update the form data with the empty value
+            form.last_name = newValue;
+            return;
+        }
+
+        // Check if the new value contains only alphabetical characters
+        if (!/^[a-zA-Z\s]+$/.test(newValue)) {
+            // If it contains non-alphabetical characters, it's an invalid input
+            console.error('Error: First name cannot contain numeric characters.');
+            // Reset the input to its previous value
+            form.last_name = oldValue;
+        }
+    },
+    { deep: true }
+);
+
 const handleAdd = () => {
     showModal.value = true;
     isEditing.value = false;
@@ -164,6 +257,21 @@ const refresh = () => {
         },
     });
 };
+
+const age= ref(null);
+
+const calculateAge = () => {
+    const currentDate = new Date();
+
+    const diffTime = currentDate - new Date(form.birthday);
+    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    let years = Math.floor(totalDays / 365.25);
+    // let months = Math.floor((totalDays % 365.25) / 30.4375);
+    // let days = Math.floor((totalDays % 365.25) % 30.4375);
+
+   age.value = years + " ";
+};
+
 </script>
 <template>
     <AuthenticatedLayout>
@@ -244,7 +352,7 @@ const refresh = () => {
                                 />
                             </a-form-item>
                             <a-form-item
-                                required
+                               
                                 label="Middle Name"
                                 name="middle_name"
                             >
@@ -265,16 +373,18 @@ const refresh = () => {
                                     :message="form.errors.last_name"
                                 />
                             </a-form-item>
-                            <a-form-item
-                                required
-                                label="Suffix Name"
-                                name="suffix_name"
-                            >
-                                <a-input v-model:value="form.suffix_name" />
-                                <InputError
-                                    class="mt-2"
-                                    :message="form.errors.suffix_name"
-                                />
+                            <a-form-item label="Suffix Name" name="suffix_name">
+                                <a-select v-model:value="form.suffix_name">
+                                <a-select-option value="Jr">Jr</a-select-option>
+                                <a-select-option value="Sr">Sr</a-select-option>
+                                <a-select-option value="II">II</a-select-option>
+                                <a-select-option value=""></a-select-option>
+                                <!-- Add more options as needed -->
+                                </a-select>
+                                     <InputError
+                                class="mt-2"
+                                :message="form.errors.suffix_name"
+                                     />
                             </a-form-item>
                         </div>
                         <div class="flex justify-between mx-auto space-x-4">
@@ -286,19 +396,16 @@ const refresh = () => {
                                 <a-date-picker
                                     v-model:value="form.birthday"
                                     format="YYYY/MM/DD"
-                                    class="w-full"
+                                    @change="calculateAge"
                                 />
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.birthday"
                                 />
                             </a-form-item>
-                            <a-form-item required label="Age" name="age">
-                                <a-input v-model:value="form.age" />
-                                <InputError
-                                    class="mt-2"
-                                    :message="form.errors.age"
-                                />
+                            <a-form-item label="Age" name="age">
+                                <a-input v-model:value="age" disabled />
+                                
                             </a-form-item>
                             <a-form-item
                                 required
@@ -316,11 +423,11 @@ const refresh = () => {
                                     ref="select"
                                     v-model:value="form.gender"
                                 >
-                                    <a-select-option value="male"
-                                        >male</a-select-option
+                                    <a-select-option value="Male"
+                                        >Male</a-select-option
                                     >
-                                    <a-select-option value="female"
-                                        >female</a-select-option
+                                    <a-select-option value="Female"
+                                        >Female</a-select-option
                                     >
                                 </a-select>
                                 <InputError

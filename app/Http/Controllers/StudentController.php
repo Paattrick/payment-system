@@ -68,9 +68,9 @@ class StudentController extends Controller
                 'middle_name' => 'nullable|string',
                 'name' => 'required|string',
                 'suffix_name' => 'nullable|string',
-                'lrn' => 'required|string',
+                'lrn' => 'required|numeric|digits:11',
                 'birthday' => 'required|string|date',
-                'contact_number' => 'required|integer|size:11',
+                'contact_number' => 'required|numeric|digits:11',
                 'gender' => 'required|string',
                 'grade' => 'required|string',
                 'section' => 'required|string',
@@ -95,7 +95,7 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateRequest($request);
-        $encrypted_password = Hash::make($validated['id_number']);
+        $encrypted_password = Hash::make($validated['lrn']);
 
         User::create(
             [
@@ -105,7 +105,6 @@ class StudentController extends Controller
                 'suffix_name' => $validated['suffix_name'],
                 'lrn' => $validated['lrn'],
                 'birthday' => $validated['birthday'],
-                'age' => $validated['age'],
                 'contact_number' => $validated['contact_number'],
                 'gender' => $validated['gender'],
                 'grade' => $validated['grade'],
@@ -113,9 +112,8 @@ class StudentController extends Controller
                 'province' => $validated['province'],
                 'municipality' => $validated['municipality'],
                 'barangay' => $validated['barangay'],
-                'id_number' => $validated['id_number'],
                 'password' => $encrypted_password,
-                'email' => $validated['id_number'] . '@gnhs.edu.ph',
+                'email' => $validated['lrn'] . '@gnhs.edu.ph',
                 'status' => 'active',
                 'meta' => $validated['meta'],
             ]

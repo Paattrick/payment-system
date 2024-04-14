@@ -40,17 +40,16 @@ class EmployeeController extends Controller
             [
                 'last_name' => 'required|string',
                 'email' => 'nullable|email',
-                'middle_name' => 'required|string',
+                'middle_name' => 'nullable|string',
                 'name' => 'required|string',
                 'suffix_name' => 'nullable|string',
                 'birthday' => 'required|string|date',
-                'age' => 'required|string',
-                'contact_number' => 'required|string',
+                'contact_number' => 'required|numeric|digits:11',
                 'gender' => 'required|string',
                 'province' => 'required|string',
                 'municipality' => 'required|string',
                 'barangay' => 'required|string',
-                'id_number' => 'required|string',
+                'id_number' => 'required|numeric',
             ],
         );
     }
@@ -70,7 +69,6 @@ class EmployeeController extends Controller
                 'last_name' => $validated['last_name'],
                 'suffix_name' => $validated['suffix_name'],
                 'birthday' => $validated['birthday'],
-                'age' => $validated['age'],
                 'contact_number' => $validated['contact_number'],
                 'gender' => $validated['gender'],
                 'province' => $validated['province'],
