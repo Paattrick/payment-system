@@ -27,7 +27,7 @@ const props = defineProps({
 const { sections, grades, strands } = composables();
 
 const page = usePage();
-console.log(page.props.currentSchoolYear)
+
 const form = useForm({
     last_name: null,
     name: null,
@@ -45,7 +45,7 @@ const form = useForm({
         municipality: null,
         barangay: null,
     },
-    school_year_id: page.props.currentSchoolYear[0].id,
+    school_year_id: page.props?.currentSchoolYear[0]?.id,
     student_fees: { ...props.fees.data },
 });
 

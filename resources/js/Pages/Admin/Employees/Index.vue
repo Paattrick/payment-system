@@ -27,17 +27,13 @@ const form = useForm({
     suffix_name: null,
     lrn: null,
     birthday: null,
-    age: null,
     contact_number: null,
     gender: null,
-    grade: null,
-    section: null,
-    province: null,
-    municipality: null,
-    barangay: null,
-    id_number: null,
-    password: null,
-    confirmation: null,
+    address: {
+        province: null,
+        municipality: null,
+        barangay: null,
+    }
 });
 
 const columns = ref([
@@ -164,6 +160,18 @@ const refresh = () => {
         },
     });
 };
+const age = ref(null)
+const calculateAge = () => {
+    const currentDate = new Date();
+
+    const diffTime = currentDate - new Date(form.birthday);
+    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    let years = Math.floor(totalDays / 365.25);
+    // let months = Math.floor((totalDays % 365.25) / 30.4375);
+    // let days = Math.floor((totalDays % 365.25) % 30.4375);
+
+   age.value = years + " ";
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -266,7 +274,6 @@ const refresh = () => {
                                 />
                             </a-form-item>
                             <a-form-item
-                                required
                                 label="Suffix Name"
                                 name="suffix_name"
                             >
@@ -287,6 +294,7 @@ const refresh = () => {
                                     v-model:value="form.birthday"
                                     format="YYYY/MM/DD"
                                     class="w-full"
+                                    @change="calculateAge"
                                 />
                                 <InputError
                                     class="mt-2"
@@ -294,7 +302,7 @@ const refresh = () => {
                                 />
                             </a-form-item>
                             <a-form-item required label="Age" name="age">
-                                <a-input v-model:value="form.age" />
+                                <a-input disabled v-model:value="age" class="text-white"/>
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.age"
@@ -317,10 +325,10 @@ const refresh = () => {
                                     v-model:value="form.gender"
                                 >
                                     <a-select-option value="male"
-                                        >male</a-select-option
+                                        >Male</a-select-option
                                     >
                                     <a-select-option value="female"
-                                        >female</a-select-option
+                                        >Female</a-select-option
                                     >
                                 </a-select>
                                 <InputError
@@ -335,7 +343,7 @@ const refresh = () => {
                         <div class="flex justify-between mx-auto space-x-4">
                             <a-form-item required label="Province">
                                 <a-select
-                                    v-model:value="form.province"
+                                    v-model:value="form.address.province"
                                     style="width: 200px"
                                 >
                                     <a-select-option value="Bohol"
@@ -345,14 +353,13 @@ const refresh = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.province"
+                                    :message="form.errors['address.province']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Municipality">
                                 <a-select
-                                    v-model:value="form.municipality"
+                                    v-model:value="form.address.municipality"
                                     style="width: 200px"
-                                    @change="handleChangeMunicipality"
                                     allowClear
                                 >
                                     <a-select-option value="Guindulman"
@@ -362,12 +369,12 @@ const refresh = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.municipality"
+                                    :message="form.errors['address.municipality']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Barangay">
                                 <a-select
-                                    v-model:value="form.barangay"
+                                    v-model:value="form.address.barangay"
                                     style="width: 200px"
                                     allowClear
                                 >
@@ -430,15 +437,15 @@ const refresh = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.barangay"
+                                    :message="form.errors['address.barangay']"
                                 />
                             </a-form-item>
                         </div>
                         <a-form-item required label="ID">
-                            <a-input v-model:value="form.id_number" />
+                            <a-input v-model:value="form.lrn" />
                             <InputError
                                 class="mt-2"
-                                :message="form.errors.id_number"
+                                :message="form.errors.lrn"
                             />
                         </a-form-item>
                     </a-card>

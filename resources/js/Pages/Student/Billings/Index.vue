@@ -26,7 +26,7 @@ const toPay = ref([]);
 const modeOfPayment = ref(null);
 
 onMounted(() => {
-    dataTable.value.meta = [...page.props.auth.user.meta];
+    dataTable.value.meta = [...page.props.auth.user.student_fees];
     setTable();
     remainingBalance();
 });
@@ -90,14 +90,14 @@ const setTable = () => {
     //     }
     // });
 
-    if (page.props.auth.user.meta.length == 0) {
+    if (page.props.auth.user.student_fees.length == 0) {
         props.fees.data.map((e) => {
-            if (e.school_year == page.props.currentSchoolYear[0].name) {
+            if (e.school_year_id == page.props.currentSchoolYear[0].id) {
                 dataTable.value.meta.push({
                     meta: e.meta,
                     name: e.name,
                     id: e.id,
-                    school_year: e.school_year,
+                    school_year_id: e.school_year_id,
                 });
             }
         });
@@ -114,7 +114,7 @@ const setTable = () => {
             meta: data.meta,
             name: data.name,
             id: data.id,
-            school_year: data.school_year,
+            school_year_id: data.school_year_id,
         });
         router.put(route("syncStudentFees.store", page.props.auth.user.id), {
             meta: dataTable.value.meta,
@@ -159,8 +159,7 @@ const remainingBalance = () => {
     dataTable.value.meta.map((e) => {
         e.meta.map((meta) => {
             if (meta.balance != "PAID") {
-                let toAdd = meta.balance == 0 ? meta.amount : meta.balance;
-                temp = Number(temp) + Number(toAdd);
+                temp = Number(temp) + Number(meta.balance);
             }
         });
     });
@@ -182,7 +181,6 @@ const submit = () => {
             student: page.props.auth.user.id,
             forceFormData: true,
             fees: dataTable.value.meta,
-            student: page.props.auth.user,
             reference:
                 modeOfPayment.value == "online"
                     ? reference.value
@@ -560,10 +558,10 @@ const handleChangeModePayment = () => {
                     >
                         <div class="flex pl-0">
                             <div>
-                                <img
+                                <!-- <img
                                     class="w-[200px] h-[200px]"
                                     src="../../../../../public/build/assets/QR.jpg"
-                                />
+                                /> -->
                             </div>
                             <div>
                                 <a-form-item label="Upload Screenshot">
