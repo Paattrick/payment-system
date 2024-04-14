@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('fees', function (Blueprint $table) {
-            $table->string('school_year')->nullable();
-        });
+        // Schema::table('fees', function (Blueprint $table) {
+        //     $table->string('school_year')->nullable();
+        // });
     }
 
     /**
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('fees', function (Blueprint $table) {
-            $table->dropColumn('school_year');
-        });
+        // Schema::table('fees', function (Blueprint $table) {
+        //     $table->dropColumn('school_year');
+        // });
     }
 };

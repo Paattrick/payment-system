@@ -65,27 +65,26 @@ class StudentController extends Controller
             [
                 'last_name' => 'required|string',
                 'email' => 'nullable|email',
-                'middle_name' => 'required|string',
+                'middle_name' => 'nullable|string',
                 'name' => 'required|string',
                 'suffix_name' => 'nullable|string',
                 'lrn' => 'required|string',
                 'birthday' => 'required|string|date',
-                'age' => 'required|string',
-                'contact_number' => 'required|string',
+                'contact_number' => 'required|integer|size:11',
                 'gender' => 'required|string',
                 'grade' => 'required|string',
                 'section' => 'required|string',
                 'province' => 'required|string',
                 'municipality' => 'required|string',
                 'barangay' => 'required|string',
-                'id_number' => 'required|string|unique:users,id_number',
                 'password' => 'nullable|max:255|same:confirmation',
                 'confirmation' => 'nullable|same:password',
                 'meta' => 'nullable'
             ],
             [
                 'password.same' => 'Password does not match.',
-                'confirmation.same' => 'Password does not match.'
+                'confirmation.same' => 'Password does not match.',
+                'contact_number.size' =>  'The contact number field must be 11 digits.'
             ]
         );
     }
