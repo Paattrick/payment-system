@@ -26,18 +26,14 @@ class User extends Authenticatable
         'suffix_name',
         'lrn',
         'birthday',
-        'age',
         'contact_number',
         'gender',
         'grade',
         'section',
-        'province',
-        'municipality',
-        'barangay',
-        'id_number',
+        'address',
         'password',
         'status',
-        'meta'
+        'student_fees'
     ];
 
     /**
@@ -58,6 +54,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'meta' => 'json',
+        'address' => 'array',
         'password' => 'hashed',
     ];
 }

@@ -39,13 +39,15 @@ const form = useForm({
     gender: null,
     grade: null,
     section: null,
-    province: null,
-    municipality: null,
-    barangay: null,
+    address: {
+        province: null,
+        municipality: null,
+        barangay: null,
+    },
     id_number: null,
     password: null,
     confirmation: null,
-    meta: { ...props.fees.data },
+    student_fees: { ...props.fees.data },
 });
 
 const search = ref(null);
@@ -594,7 +596,7 @@ const calculateAge = () => {
                         <div class="flex justify-between mx-auto space-x-4">
                             <a-form-item required label="Province">
                                 <a-select
-                                    v-model:value="form.province"
+                                    v-model:value="form.address.province"
                                     style="width: 200px"
                                 >
                                     <a-select-option value="Bohol"
@@ -609,7 +611,7 @@ const calculateAge = () => {
                             </a-form-item>
                             <a-form-item required label="Municipality">
                                 <a-select
-                                    v-model:value="form.municipality"
+                                    v-model:value="form.address.municipality"
                                     style="width: 200px"
                                     @change="handleChangeMunicipality"
                                     allowClear
@@ -626,7 +628,7 @@ const calculateAge = () => {
                             </a-form-item>
                             <a-form-item required label="Barangay">
                                 <a-select
-                                    v-model:value="form.barangay"
+                                    v-model:value="form.address.barangay"
                                     style="width: 200px"
                                     allowClear
                                 >
