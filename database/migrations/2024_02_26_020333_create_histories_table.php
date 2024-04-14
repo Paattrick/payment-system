@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('name');
             $table->json('meta');
             $table->string('file')->nullable();
+            $table->string('status')->nullable();
+            $table->string('note')->nullable();
+            $table->string('reference')->unique()->nullable();
+            $table->string('mode_of_payment')->nullable();
             $table->timestamps();
         });
     }

@@ -30,12 +30,10 @@ class User extends Authenticatable
         'gender',
         'grade',
         'section',
-        'province',
-        'municipality',
-        'barangay',
+        'address',
         'password',
         'status',
-        'meta'
+        'student_fees',
     ];
 
     /**
@@ -55,7 +53,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'meta' => 'json',
+        'student_fees' => 'json',
+        'address' => 'array',
         'password' => 'hashed',
     ];
 }

@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('fees', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->unique()->nullable();
             $table->json('meta')->nullable();
+            $table->json('school_years')->nullable();
             $table->timestamps();
         });
     }
