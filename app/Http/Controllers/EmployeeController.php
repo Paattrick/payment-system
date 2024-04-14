@@ -46,11 +46,17 @@ class EmployeeController extends Controller
                 'birthday' => 'required|string|date',
                 'contact_number' => 'required|numeric|digits:11',
                 'gender' => 'required|string',
-                'province' => 'required|string',
-                'municipality' => 'required|string',
-                'barangay' => 'required|string',
-                'id_number' => 'required|numeric',
+                'address' => 'required|array',
+                'address.province' => 'required|string',
+                'address.municipality' => 'required|string',
+                'address.barangay' => 'required|string',
+                'lrn' => 'required|string',
             ],
+            [
+                'address.province.required' => 'The province field is required.',
+                'address.municipality.required' => 'The municipality field is required.',
+                'address.barangay.required' => 'The barangay field is required.',
+            ]
         );
     }
 
@@ -60,7 +66,7 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateRequest($request);
-        $encrypted_password = Hash::make($validated['id_number']);
+        $encrypted_password = Hash::make($validated['lrn']);
 
         User::create(
             [
@@ -71,12 +77,10 @@ class EmployeeController extends Controller
                 'birthday' => $validated['birthday'],
                 'contact_number' => $validated['contact_number'],
                 'gender' => $validated['gender'],
-                'province' => $validated['province'],
-                'municipality' => $validated['municipality'],
-                'barangay' => $validated['barangay'],
-                'id_number' => $validated['id_number'],
+                'address' => $validated['address'],
+                'lrn' => $validated['lrn'],
                 'password' => $encrypted_password,
-                'email' => $validated['id_number'] . '@gnhs.edu.ph'
+                'email' => $validated['lrn'] . '@gnhs.edu.ph'
             ]
         )->assignRole('employee');
 

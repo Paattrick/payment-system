@@ -51,7 +51,7 @@ class UserStudentController extends Controller
             ]);
 
             $student->update([
-                'meta' => $request->fees,
+                'student_fees' => $request->fees,
             ]);
         }
 
@@ -66,7 +66,7 @@ class UserStudentController extends Controller
             ]);
             
             $student->update([
-                'meta' => $request->fees,
+                'student_fees' => $request->fees,
             ]);
         }
 
@@ -77,12 +77,13 @@ class UserStudentController extends Controller
     public function submitPayment(Request $request, User $student)
     {
         $student->update([
-            'meta' => $request->meta,
+            'student_fees' => $request->meta,
         ]);
 
         $history = History::where('id', $request->transactionId)
             ->update([
                 'status' => 'accepted',
+                'collector_id' => $request->collector_id,
                 'reference' =>  $request->type == 'cash' ? 'CASH-'. $request->transactionId : $request->reference
             ]);
 

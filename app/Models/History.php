@@ -11,6 +11,7 @@ class History extends Model
 
     protected $fillable = [
         'student_id',
+        'collector_id',
         'name',
         'file',
         'meta',

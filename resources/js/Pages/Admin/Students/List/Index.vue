@@ -27,6 +27,7 @@ const props = defineProps({
 const { sections, grades, strands } = composables();
 
 const page = usePage();
+
 const form = useForm({
     last_name: null,
     name: null,
@@ -39,13 +40,13 @@ const form = useForm({
     gender: null,
     grade: null,
     section: null,
-    province: null,
-    municipality: null,
-    barangay: null,
-    id_number: null,
-    password: null,
-    confirmation: null,
-    meta: { ...props.fees.data },
+    address: {
+        province: null,
+        municipality: null,
+        barangay: null,
+    },
+    school_year_id: page.props?.currentSchoolYear[0]?.id,
+    student_fees: { ...props.fees.data },
 });
 
 const search = ref(null);
@@ -393,9 +394,9 @@ const handleChangeMunicipality = (val) => {
 };
 
 const showStudentFees = (val) => {
-    val.meta.map((e) => {
-        if (e.school_year == page.props.currentSchoolYear[0].name) {
-            studentFees.value = [...val.meta];
+    val.student_fees.map((e) => {
+        if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+            studentFees.value = [...val.student_fees];
         } else {
             studentFees.value = null;
         }
@@ -554,7 +555,7 @@ const calculateAge = () => {
                 :afterClose="handleCancel"
             >
                 <a-form :model="form" name="basic" layout="vertical">
-                    <a-card title="Personal Details" class="bg-gray-200">
+                    <a-card title="Personal Details" class="bg-gray-200 mb-5">
                         <div class="flex justify-between mx-auto space-x-4">
                             <a-form-item
                                 required
@@ -603,13 +604,6 @@ const calculateAge = () => {
 
                         </div>
                         <div class="flex justify-between mx-auto space-x-4">
-                            <a-form-item required label="LRN" name="lrn">
-                                <a-input v-model:value="form.lrn" />
-                                <InputError
-                                    class="mt-2"
-                                    :message="form.errors.lrn"
-                                />
-                            </a-form-item>
                             <a-form-item
                                 required
                                 label="Date of Birth"
@@ -619,6 +613,7 @@ const calculateAge = () => {
                                     v-model:value="form.birthday"
                                     format="YYYY/MM/DD"
                                     @change="calculateAge"
+                                    class="w-full"
                                 />
                                 <InputError
                                     class="mt-2"
@@ -658,6 +653,16 @@ const calculateAge = () => {
                                 />
                             </a-form-item>
                         </div>
+                    </a-card>
+
+                    <a-card title="School Details" class="bg-gray-200">
+                        <a-form-item required label="LRN" name="lrn">
+                            <a-input v-model:value="form.lrn" />
+                            <InputError
+                                class="mt-2"
+                                :message="form.errors.lrn"
+                            />
+                        </a-form-item>
                         <div class="flex mx-auto space-x-4">
                             <a-form-item
                                 required
@@ -715,7 +720,7 @@ const calculateAge = () => {
                         <div class="flex justify-between mx-auto space-x-4">
                             <a-form-item required label="Province">
                                 <a-select
-                                    v-model:value="form.province"
+                                    v-model:value="form.address.province"
                                     style="width: 200px"
                                 >
                                     <a-select-option value="Bohol"
@@ -725,12 +730,12 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.province"
+                                    :message="form.errors['address.province']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Municipality">
                                 <a-select
-                                    v-model:value="form.municipality"
+                                    v-model:value="form.address.municipality"
                                     style="width: 200px"
                                     @change="handleChangeMunicipality"
                                     allowClear
@@ -742,12 +747,12 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.municipality"
+                                    :message="form.errors['address.municipality']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Barangay">
                                 <a-select
-                                    v-model:value="form.barangay"
+                                    v-model:value="form.address.barangay"
                                     style="width: 200px"
                                     allowClear
                                 >
@@ -810,7 +815,7 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.barangay"
+                                    :message="form.errors['address.barangay']"
                                 />
                             </a-form-item>
                         </div>

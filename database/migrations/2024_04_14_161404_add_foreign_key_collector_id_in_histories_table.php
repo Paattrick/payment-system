@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('histories', function (Blueprint $table) {
-            $table->string('reference')->unique()->nullable();
+            $table->unsignedBigInteger('collector_id')->index()->nullable();
+            $table->foreign('collector_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('histories', function (Blueprint $table) {
-            $table->dropColumn('reference');
+            $table->dropForeign('collector_id');
         });
     }
 };

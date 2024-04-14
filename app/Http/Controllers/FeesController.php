@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Fee;
 use App\Models\User;
+use App\Models\SchoolYear;
 use App\Http\Resources\FeeResource;
 
 class FeesController extends Controller
@@ -23,8 +24,13 @@ class FeesController extends Controller
             ->whereNotNull('meta')
             ->paginate($request->per_page);
 
+        $school_years = SchoolYear::query()
+            ->whereNotNull('name')
+            ->get();
+
         return Inertia::render('Admin/Fees/Index', [
-            'fees' => FeeResource::collection($fees)
+            'fees' => FeeResource::collection($fees),
+            'school_years' => $school_years
         ]);
     }
 
@@ -33,14 +39,24 @@ class FeesController extends Controller
      */
     public function store(Request $request)
     {
-        
         $validated = $request->validate([
-            'name' => 'required|string|unique:fees,name'
+            'name' => 'required|string|unique:fees,name',
+            'school_year' => 'required|integer',
+            'meta' => 'required|array',
+            'meta.*.clearance' => 'required|string|distinct',
+            'meta.*.amount' => 'required|decimal:0,2',
+            'meta.*.toPay' => 'required|decimal:0,2',
+            'meta.*.balance' => 'required|decimal:0,2',
+        ], [
+            'meta.*.clearance.distinct' => 'Duplicate value.',
+            'meta.*.amount.decimal' => 'Amount must be decimal.',
+            'meta.*.toPay' => 'Amount to pay must be decimal.',
+            'meta.*.balance' => 'Balance must be decimal.',
         ]);
         
         Fee::create([
-            'meta' => $request->meta,
-            'school_year' => $request->school_year,
+            'meta' => $validated['meta'],
+            'school_year_id' => $validated['school_year'],
             'name' => $validated['name']
         ]);
 

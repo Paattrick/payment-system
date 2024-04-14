@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->json('meta')->nullable();
+        Schema::table('fees', function (Blueprint $table) {
+            $table->unsignedBigInteger('school_year_id')->index()->nullable();
+            $table->foreign('school_year_id')->references('id')->on('school_years')->onDelete('cascade');
         });
     }
 
@@ -21,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
+        Schema::table('fees', function (Blueprint $table) {
+            table->dropForeign('school_year_id');
         });
     }
 };

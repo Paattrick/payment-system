@@ -28,17 +28,13 @@ const form = useForm({
     suffix_name: null,
     lrn: null,
     birthday: null,
-    age: null,
     contact_number: null,
     gender: null,
-    grade: null,
-    section: null,
-    province: null,
-    municipality: null,
-    barangay: null,
-    id_number: null,
-    password: null,
-    confirmation: null,
+    address: {
+        province: null,
+        municipality: null,
+        barangay: null,
+    }
 });
 
 const columns = ref([
@@ -442,7 +438,7 @@ const calculateAge = () => {
                         <div class="flex justify-between mx-auto space-x-4">
                             <a-form-item required label="Province">
                                 <a-select
-                                    v-model:value="form.province"
+                                    v-model:value="form.address.province"
                                     style="width: 200px"
                                 >
                                     <a-select-option value="Bohol"
@@ -452,14 +448,13 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.province"
+                                    :message="form.errors['address.province']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Municipality">
                                 <a-select
-                                    v-model:value="form.municipality"
+                                    v-model:value="form.address.municipality"
                                     style="width: 200px"
-                                    @change="handleChangeMunicipality"
                                     allowClear
                                 >
                                     <a-select-option value="Guindulman"
@@ -469,12 +464,12 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.municipality"
+                                    :message="form.errors['address.municipality']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Barangay">
                                 <a-select
-                                    v-model:value="form.barangay"
+                                    v-model:value="form.address.barangay"
                                     style="width: 200px"
                                     allowClear
                                 >
@@ -537,15 +532,15 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.barangay"
+                                    :message="form.errors['address.barangay']"
                                 />
                             </a-form-item>
                         </div>
                         <a-form-item required label="ID">
-                            <a-input v-model:value="form.id_number" />
+                            <a-input v-model:value="form.lrn" />
                             <InputError
                                 class="mt-2"
-                                :message="form.errors.id_number"
+                                :message="form.errors.lrn"
                             />
                         </a-form-item>
                     </a-card>
