@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::table('fees', function (Blueprint $table) {
-        //     $table->string('name')->unique()->nullable();
-        // });
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn("age");
+        });
     }
 
     /**
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Schema::table('fees', function (Blueprint $table) {
-        //     $table->dropColumn('name');
-        // });
+        Schema::table('users', function (Blueprint $table) {
+            $table->string("age");
+        });
     }
 };

@@ -26,7 +26,6 @@ class User extends Authenticatable
         'suffix_name',
         'lrn',
         'birthday',
-        'age',
         'contact_number',
         'gender',
         'grade',
@@ -34,7 +33,6 @@ class User extends Authenticatable
         'province',
         'municipality',
         'barangay',
-        'id_number',
         'password',
         'status',
         'meta'

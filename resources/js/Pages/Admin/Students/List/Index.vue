@@ -126,6 +126,22 @@ watch(
     { deep: true }
 );
 
+watch(
+    () => form.contact_number,
+    async (newValue, oldValue) => {
+        const numericValue = newValue.replace(/\D/g, '');
+
+        if (numericValue.length > 11) {
+            console.error('Error: Contact number cannot exceed 11 digits.');
+            form.contact_number = numericValue.slice(0, 11);
+        } else {
+            form.contact_number = numericValue;
+        }
+    },
+    { deep: true }
+);
+
+
 const columns = ref([
     {
         title: "Last Name",
@@ -304,6 +320,8 @@ const remainingBalance = () => {
     runningBalance.value = temp;
 };
 
+const age= ref(null);
+
 const calculateAge = () => {
     const currentDate = new Date();
 
@@ -313,7 +331,7 @@ const calculateAge = () => {
     // let months = Math.floor((totalDays % 365.25) / 30.4375);
     // let days = Math.floor((totalDays % 365.25) % 30.4375);
 
-    form.age = years + " ";
+   age.value = years + " ";
 };
 </script>
 <template>
@@ -449,15 +467,12 @@ const calculateAge = () => {
                                 />
                             </a-form-item>
                             <a-form-item
-                                required
+                                
                                 label="Middle Name"
                                 name="middle_name"
                             >
                                 <a-input v-model:value="form.middle_name" />
-                                <InputError
-                                    class="mt-2"
-                                    :message="form.errors.middle_name"
-                                />
+                                
                             </a-form-item>
                             <a-form-item
                                 required
@@ -502,11 +517,8 @@ const calculateAge = () => {
                                 />
                             </a-form-item>
                             <a-form-item label="Age" name="age">
-                                <a-input v-model:value="form.age" disabled />
-                                <InputError
-                                    class="mt-2"
-                                    :message="form.errors.age"
-                                />
+                                <a-input v-model:value="age" disabled />
+                                
                             </a-form-item>
                             <a-form-item
                                 required
@@ -693,13 +705,7 @@ const calculateAge = () => {
                                 />
                             </a-form-item>
                         </div>
-                        <a-form-item required label="ID">
-                            <a-input v-model:value="form.id_number" />
-                            <InputError
-                                class="mt-2"
-                                :message="form.errors.id_number"
-                            />
-                        </a-form-item>
+                    
                     </a-card>
                     <div class="flex justify-end mt-5">
                         <a-button class="mr-2" @click.prevent="handleCancel"
