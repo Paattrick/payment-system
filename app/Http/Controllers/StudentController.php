@@ -70,21 +70,25 @@ class StudentController extends Controller
                 'suffix_name' => 'nullable|string',
                 'lrn' => 'required|string',
                 'birthday' => 'required|string|date',
-                'contact_number' => 'required|integer|size:11',
+                'contact_number' => 'required|string|max:11',
                 'gender' => 'required|string',
                 'grade' => 'required|string',
                 'section' => 'required|string',
-                'province' => 'required|string',
-                'municipality' => 'required|string',
-                'barangay' => 'required|string',
+                'address' => 'required|array',
+                'address.province' => 'required|string',
+                'address.municipality' => 'required|string',
+                'address.barangay' => 'required|string',
                 'password' => 'nullable|max:255|same:confirmation',
                 'confirmation' => 'nullable|same:password',
-                'meta' => 'nullable'
+                'student_fees' => 'nullable'
             ],
             [
                 'password.same' => 'Password does not match.',
                 'confirmation.same' => 'Password does not match.',
-                'contact_number.size' =>  'The contact number field must be 11 digits.'
+                'contact_number.size' =>  'The contact number field must be 11 digits.',
+                'address.province.required' => 'The province field is required.',
+                'address.municipality.required' => 'The municipality field is required.',
+                'address.barangay.required' => 'The barangay field is required.',
             ]
         );
     }
@@ -95,8 +99,8 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateRequest($request);
-        $encrypted_password = Hash::make($validated['id_number']);
-
+        $encrypted_password = Hash::make($validated['lrn']);
+        
         User::create(
             [
                 'name' => $validated['name'],
@@ -105,19 +109,16 @@ class StudentController extends Controller
                 'suffix_name' => $validated['suffix_name'],
                 'lrn' => $validated['lrn'],
                 'birthday' => $validated['birthday'],
-                'age' => $validated['age'],
                 'contact_number' => $validated['contact_number'],
                 'gender' => $validated['gender'],
                 'grade' => $validated['grade'],
                 'section' => $validated['section'],
-                'province' => $validated['province'],
-                'municipality' => $validated['municipality'],
-                'barangay' => $validated['barangay'],
-                'id_number' => $validated['id_number'],
+                'address' => $validated['address'],
                 'password' => $encrypted_password,
-                'email' => $validated['id_number'] . '@gnhs.edu.ph',
+                'email' => $validated['lrn'] . '@gnhs.edu.ph',
                 'status' => 'active',
-                'meta' => $validated['meta'],
+                'active_school_year_id' => $request->school_year_id,
+                'student_fees' => $validated['student_fees'],
             ]
         )->assignRole('student');
 

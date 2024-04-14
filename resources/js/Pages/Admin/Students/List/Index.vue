@@ -27,6 +27,7 @@ const props = defineProps({
 const { sections, grades, strands } = composables();
 
 const page = usePage();
+console.log(page.props.currentSchoolYear)
 const form = useForm({
     last_name: null,
     name: null,
@@ -44,9 +45,7 @@ const form = useForm({
         municipality: null,
         barangay: null,
     },
-    id_number: null,
-    password: null,
-    confirmation: null,
+    school_year_id: page.props.currentSchoolYear[0].id,
     student_fees: { ...props.fees.data },
 });
 
@@ -294,9 +293,9 @@ const handleChangeMunicipality = (val) => {
 };
 
 const showStudentFees = (val) => {
-    val.meta.map((e) => {
-        if (e.school_year == page.props.currentSchoolYear[0].name) {
-            studentFees.value = [...val.meta];
+    val.student_fees.map((e) => {
+        if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+            studentFees.value = [...val.student_fees];
         } else {
             studentFees.value = null;
         }
@@ -455,7 +454,7 @@ const calculateAge = () => {
                 :afterClose="handleCancel"
             >
                 <a-form :model="form" name="basic" layout="vertical">
-                    <a-card title="Personal Details" class="bg-gray-200">
+                    <a-card title="Personal Details" class="bg-gray-200 mb-5">
                         <div class="flex justify-between mx-auto space-x-4">
                             <a-form-item
                                 required
@@ -496,13 +495,6 @@ const calculateAge = () => {
                             </a-form-item>
                         </div>
                         <div class="flex justify-between mx-auto space-x-4">
-                            <a-form-item required label="LRN" name="lrn">
-                                <a-input v-model:value="form.lrn" />
-                                <InputError
-                                    class="mt-2"
-                                    :message="form.errors.lrn"
-                                />
-                            </a-form-item>
                             <a-form-item
                                 required
                                 label="Date of Birth"
@@ -512,6 +504,7 @@ const calculateAge = () => {
                                     v-model:value="form.birthday"
                                     format="YYYY/MM/DD"
                                     @change="calculateAge"
+                                    class="w-full"
                                 />
                                 <InputError
                                     class="mt-2"
@@ -551,6 +544,16 @@ const calculateAge = () => {
                                 />
                             </a-form-item>
                         </div>
+                    </a-card>
+
+                    <a-card title="School Details" class="bg-gray-200">
+                        <a-form-item required label="LRN" name="lrn">
+                            <a-input v-model:value="form.lrn" />
+                            <InputError
+                                class="mt-2"
+                                :message="form.errors.lrn"
+                            />
+                        </a-form-item>
                         <div class="flex mx-auto space-x-4">
                             <a-form-item
                                 required
@@ -618,7 +621,7 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.province"
+                                    :message="form.errors['address.province']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Municipality">
@@ -635,7 +638,7 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.municipality"
+                                    :message="form.errors['address.municipality']"
                                 />
                             </a-form-item>
                             <a-form-item required label="Barangay">
@@ -703,7 +706,7 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors.barangay"
+                                    :message="form.errors['address.barangay']"
                                 />
                             </a-form-item>
                         </div>

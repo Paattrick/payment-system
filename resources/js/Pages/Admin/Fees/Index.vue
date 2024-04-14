@@ -15,6 +15,7 @@ const [modal] = Modal.useModal();
 
 const props = defineProps({
     fees: Object,
+    school_years: Object
 });
 
 const page = usePage();
@@ -101,16 +102,15 @@ const dataTable = ref({
 
 const setTable = () => {
     props.fees.data.map((e) => {
-        if (e.school_year == page.props.currentSchoolYear[0].name) {
+        if (e.school_year_id == page.props.currentSchoolYear[0].id) {
             dataTable.value.meta.push({
                 meta: e.meta,
                 name: e.name,
                 id: e.id,
-                school_year: e.school_year,
+                school_year_id: e.school_year_id,
             });
         }
     });
-    console.log(dataTable.value);
 };
 
 const addField = () => {
@@ -119,10 +119,9 @@ const addField = () => {
     } else {
         form.meta.push({
             clearance: clearance.value,
-            amount: amount.value,
-            toPay: toPay.value,
-            balance: amount.value,
-            dateSubmitted: null,
+            amount: parseFloat(amount.value).toFixed(2),
+            toPay: parseFloat(toPay.value).toFixed(2),
+            balance: parseFloat(amount.value).toFixed(2),
             status: null,
         });
         clearance.value = null;
@@ -149,7 +148,6 @@ const submit = () => {
     if (form.meta.length == 0) {
         return message.error("Specific is required");
     }
-    form.school_year = page.props.currentSchoolYear[0].name;
     form.post(route("fees.store"), {
         preserveScroll: true,
         preserveState: true,
@@ -283,6 +281,26 @@ const refresh = () => {
                 :width="600"
             >
                 <a-form :model="form" name="basic" layout="vertical">
+                    <a-form-item required label="For School Year">
+                        <a-select
+                            v-model:value="form.school_year"
+                            :options="
+                                props.school_years.map((item) => ({
+                                    value: item.id,
+                                    label: item.name,
+                                }))
+                            "
+                            :filter-option="
+                                (input, option) =>
+                                    option.label
+                                        .toLowerCase()
+                                        .indexOf(input.toLowerCase()) >=
+                                    0
+                            "
+                        >
+                        </a-select>
+                        <InputError class="mt-2" :message="form.errors.name" />
+                    </a-form-item>
                     <a-form-item required label="Name of collection">
                         <a-input v-model:value="form.name" />
                         <InputError class="mt-2" :message="form.errors.name" />
@@ -312,6 +330,9 @@ const refresh = () => {
                                         v-if="column.dataIndex === 'meta'"
                                     >
                                         {{ record.clearance }}
+                                        <div>
+                                            <InputError class="mt-2" :message="form.errors[`meta.${index}.clearance`]" />
+                                        </div>
                                     </template>
                                     <template
                                         v-if="column.dataIndex === 'amount'"

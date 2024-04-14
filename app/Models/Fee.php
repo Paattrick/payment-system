@@ -11,7 +11,7 @@ class Fee extends Model
 
     protected $fillable = [
         'meta',
-        'school_year',
+        'school_year_id',
         'name'
     ];
 

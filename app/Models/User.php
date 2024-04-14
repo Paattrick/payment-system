@@ -34,6 +34,7 @@ class User extends Authenticatable
         'password',
         'status',
         'student_fees',
+        'active_school_year_id'
     ];
 
     /**
