@@ -33,7 +33,7 @@ class User extends Authenticatable
         'address',
         'password',
         'status',
-        'student_fees'
+        'student_fees',
     ];
 
     /**
@@ -53,7 +53,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'meta' => 'json',
+        'student_fees' => 'json',
         'address' => 'array',
         'password' => 'hashed',
     ];
