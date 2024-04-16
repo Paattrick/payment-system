@@ -144,14 +144,114 @@ watch(
 
 watch(
     () => form.contact_number,
-    async (newValue, oldValue) => {
+    (newValue, oldValue) => {
         const numericValue = newValue.replace(/\D/g, "");
+
+        if (!Number.isInteger(Number(numericValue))) {
+            console.error("Error: Contact number must be an integer.");
+
+            form.contact_number = oldValue;
+            return;
+        }
 
         if (numericValue.length > 11) {
             console.error("Error: Contact number cannot exceed 11 digits.");
+
             form.contact_number = numericValue.slice(0, 11);
         } else {
             form.contact_number = numericValue;
+        }
+    },
+    { deep: true }
+);
+
+watch(
+    () => form.lrn,
+    (newValue, oldValue) => {
+        const numericValue = newValue.replace(/\D/g, "");
+
+        if (!Number.isInteger(Number(numericValue))) {
+            console.error("Error: Lrn must be an integer.");
+
+            form.lrn = oldValue;
+            return;
+        }
+
+        if (numericValue.length > 11) {
+            console.error("Error: Lrn cannot exceed 11 digits.");
+
+            form.lrn = numericValue.slice(0, 11);
+        } else {
+            form.lrn = numericValue;
+        }
+    },
+    { deep: true }
+);
+
+watch(
+    () => form.name,
+    (newValue, oldValue) => {
+        // Check if the new value is empty (allows deletion)
+        if (newValue === "") {
+            // Update the form data with the empty value
+            form.name = newValue;
+            return;
+        }
+
+        // Check if the new value contains only alphabetical characters
+        if (!/^[a-zA-Z\s]+$/.test(newValue)) {
+            // If it contains non-alphabetical characters, it's an invalid input
+            console.error(
+                "Error: First name cannot contain numeric characters."
+            );
+            // Reset the input to its previous value
+            form.name = oldValue;
+        }
+    },
+    { deep: true }
+);
+
+watch(
+    () => form.middle_name,
+    (newValue, oldValue) => {
+        // Check if the new value is empty (allows deletion)
+        if (newValue === "") {
+            // Update the form data with the empty value
+            form.middle_name = newValue;
+            return;
+        }
+
+        // Check if the new value contains only alphabetical characters
+        if (!/^[a-zA-Z\s]+$/.test(newValue)) {
+            // If it contains non-alphabetical characters, it's an invalid input
+            console.error(
+                "Error: First name cannot contain numeric characters."
+            );
+            // Reset the input to its previous value
+            form.middle_name = oldValue;
+        }
+    },
+    { deep: true }
+);
+
+watch(
+    () => form.last_name,
+    (newValue, oldValue) => {
+        // Check if the new value is empty (allows deletion)
+        if (newValue === "") {
+            // Update the form data with the empty value
+            form.last_name = newValue;
+            return;
+        }
+
+        // Check if the new value contains only alphabetical characters
+        if (!/^[a-zA-Z\s]+$/.test(newValue)) {
+            // If it contains non-alphabetical characters, it's an invalid input
+            console.error(
+                "Error: First name cannot contain numeric characters."
+            );
+            // Reset the input to its previous value
+            form.last_name = oldValue;
         }
     },
     { deep: true }
@@ -537,8 +637,21 @@ const enrollStudents = () => {
                                     :message="form.errors.last_name"
                                 />
                             </a-form-item>
+
                             <a-form-item label="Suffix Name" name="suffix_name">
-                                <a-input v-model:value="form.suffix_name" />
+                                <a-select v-model:value="form.suffix_name">
+                                    <a-select-option value="Jr"
+                                        >Jr</a-select-option
+                                    >
+                                    <a-select-option value="Sr"
+                                        >Sr</a-select-option
+                                    >
+                                    <a-select-option value="II"
+                                        >II</a-select-option
+                                    >
+                                    <a-select-option value=""></a-select-option>
+                                    <!-- Add more options as needed -->
+                                </a-select>
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.suffix_name"

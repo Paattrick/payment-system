@@ -68,9 +68,9 @@ class StudentController extends Controller
                 'middle_name' => 'nullable|string',
                 'name' => 'required|string',
                 'suffix_name' => 'nullable|string',
-                'lrn' => 'required|string',
+                'lrn' => 'required|numeric|digits:11',
                 'birthday' => 'required|string|date',
-                'contact_number' => 'required|string|max:11',
+                'contact_number' => 'required|numeric|digits:11',
                 'gender' => 'required|string',
                 'grade' => 'required|string',
                 'section' => 'required|string',
@@ -100,7 +100,7 @@ class StudentController extends Controller
     {
         $validated = $this->validateRequest($request);
         $encrypted_password = Hash::make($validated['lrn']);
-        
+
         User::create(
             [
                 'name' => $validated['name'],

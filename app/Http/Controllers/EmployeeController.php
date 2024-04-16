@@ -44,7 +44,7 @@ class EmployeeController extends Controller
                 'name' => 'required|string',
                 'suffix_name' => 'nullable|string',
                 'birthday' => 'required|string|date',
-                'contact_number' => 'required|string',
+                'contact_number' => 'required|numeric|digits:11',
                 'gender' => 'required|string',
                 'address' => 'required|array',
                 'address.province' => 'required|string',

@@ -505,7 +505,7 @@ const handleChangeModePayment = () => {
                         @click="handlePayment()"
                         type="primary"
                     >
-                        Okay
+                        Pay
                     </a-button>
                 </div>
             </a-modal>
