@@ -51,6 +51,9 @@ class HandleInertiaRequests extends Middleware
             'currentSchoolYear' =>  SchoolYear::query()
             ->where('status', 'active')
             ->get(),
+            'activeSchoolYear' =>  SchoolYear::query()
+            ->where('current_school_year', true)
+            ->get(),
         ];
     }
 }

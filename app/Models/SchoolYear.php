@@ -11,6 +11,11 @@ class SchoolYear extends Model
 
     protected $fillable = [
         'name',
-        'status'
+        'status',
+        'current_school_year'
+    ];
+
+    protected $casts = [
+        'current_school_year' => 'bool'
     ];
 }

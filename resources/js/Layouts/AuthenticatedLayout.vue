@@ -269,7 +269,7 @@ const focus = () => {
                         >
                     </a-menu-item>
                     <a-menu-item
-                        key="7"
+                        key="8"
                         v-if="page.props.auth.role.is_admin"
                         :class="
                             route().current('grades.index')
@@ -285,6 +285,26 @@ const focus = () => {
                                 class="text-white"
                             >
                                 Grade and Sections
+                            </Link></span
+                        >
+                    </a-menu-item>
+                    <a-menu-item
+                        key="9"
+                        v-if="page.props.auth.role.is_admin"
+                        :class="
+                            route().current('school-year.index')
+                                ? 'rounded-md bg-[#1677ff]'
+                                : ''
+                        "
+                    >
+                        <DeleteOutlined />
+                        <span>
+                            <Link
+                                :href="route('school-year.index')"
+                                :active="route().current('school-year.index')"
+                                class="text-white"
+                            >
+                                School Years
                             </Link></span
                         >
                     </a-menu-item>

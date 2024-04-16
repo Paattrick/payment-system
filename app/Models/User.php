@@ -34,7 +34,8 @@ class User extends Authenticatable
         'password',
         'status',
         'student_fees',
-        'active_school_year_id'
+        'active_school_year_id',
+        'enrolled_school_years'
     ];
 
     /**
@@ -57,5 +58,6 @@ class User extends Authenticatable
         'student_fees' => 'json',
         'address' => 'array',
         'password' => 'hashed',
+        'enrolled_school_years' => 'array'
     ];
 }

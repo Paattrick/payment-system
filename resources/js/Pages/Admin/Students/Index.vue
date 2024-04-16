@@ -8,10 +8,11 @@ import {
     RestFilled,
     EditFilled,
     ExclamationCircleFilled,
+    DownOutlined,
 } from "@ant-design/icons-vue";
 import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
-import { Modal, notification } from "ant-design-vue";
+import { Modal, notification, message } from "ant-design-vue";
 import { watchDebounced } from "@vueuse/core";
 import { onMounted, watch } from "vue";
 import moment from "moment";
@@ -46,6 +47,7 @@ const form = useForm({
         barangay: null,
     },
     school_year_id: page.props?.currentSchoolYear[0]?.id,
+    current_school_year: page.props?.activeSchoolYear[0]?.id,
     student_fees: { ...props.fees.data },
 });
 
@@ -54,6 +56,19 @@ const loading = ref(false);
 const grade = ref(null);
 const section = ref(null);
 const testSections = ref([]);
+const dataTable = ref([]);
+
+onMounted(() => {
+    props.students.data.map((e) => {
+        if (
+            e.enrolled_school_years.includes(
+                page.props.currentSchoolYear[0].id.toString()
+            )
+        ) {
+            dataTable.value.push(e);
+        }
+    });
+});
 
 watchDebounced(
     [search, grade, section],
@@ -130,10 +145,10 @@ watch(
 watch(
     () => form.contact_number,
     async (newValue, oldValue) => {
-        const numericValue = newValue.replace(/\D/g, '');
+        const numericValue = newValue.replace(/\D/g, "");
 
         if (numericValue.length > 11) {
-            console.error('Error: Contact number cannot exceed 11 digits.');
+            console.error("Error: Contact number cannot exceed 11 digits.");
             form.contact_number = numericValue.slice(0, 11);
         } else {
             form.contact_number = numericValue;
@@ -141,7 +156,6 @@ watch(
     },
     { deep: true }
 );
-
 
 const columns = ref([
     {
@@ -321,7 +335,7 @@ const remainingBalance = () => {
     runningBalance.value = temp;
 };
 
-const age= ref(null);
+const age = ref(null);
 
 const calculateAge = () => {
     const currentDate = new Date();
@@ -332,7 +346,27 @@ const calculateAge = () => {
     // let months = Math.floor((totalDays % 365.25) / 30.4375);
     // let days = Math.floor((totalDays % 365.25) % 30.4375);
 
-   age.value = years + " ";
+    age.value = years + " ";
+};
+
+const selectedStudents = ref([]);
+
+const onSelectChange = (value) => {
+    selectedStudents.value = value;
+};
+
+const enrollStudents = () => {
+    router.put(
+        route("students.enroll", {
+            students: selectedStudents.value,
+            current_school_year: page.props?.activeSchoolYear[0]?.id,
+        }),
+        {
+            onSuccess: () => {
+                notification.success("Successfully Enrolled");
+            },
+        }
+    );
 };
 </script>
 <template>
@@ -341,10 +375,12 @@ const calculateAge = () => {
             <div class="page-title height-md:mb-30">Students</div>
             <div>
                 <TableComponent
-                    :dataSource="props.students.data"
+                    :dataSource="dataTable"
                     :columns="columns"
                     :isLoading="loading"
                     :paginationData="props.students.meta"
+                    :hasRowSelection="true"
+                    @onSelectChange="onSelectChange($event)"
                 >
                     <template #actionButtons>
                         <div class="flex justify-between">
@@ -403,7 +439,27 @@ const calculateAge = () => {
                                 </div>
                                 <a-button @click="refresh()">Refresh</a-button>
                             </div>
-                            <div class="justify-end">
+                            <div class="flex space-x-4 justify-end">
+                                <div v-if="selectedStudents.length > 0">
+                                    <a-dropdown :trigger="['click']">
+                                        <a-button
+                                            class="ant-dropdown-link"
+                                            @click.prevent
+                                        >
+                                            Actions
+                                            <DownOutlined />
+                                        </a-button>
+                                        <template #overlay>
+                                            <a-menu>
+                                                <a-menu-item key="0">
+                                                    <a @click="enrollStudents()"
+                                                        >Enroll Student's</a
+                                                    >
+                                                </a-menu-item>
+                                            </a-menu>
+                                        </template>
+                                    </a-dropdown>
+                                </div>
                                 <a-button type="primary" @click="handleAdd">
                                     Add Student
                                 </a-button>
@@ -467,13 +523,8 @@ const calculateAge = () => {
                                     :message="form.errors.name"
                                 />
                             </a-form-item>
-                            <a-form-item
-                                
-                                label="Middle Name"
-                                name="middle_name"
-                            >
+                            <a-form-item label="Middle Name" name="middle_name">
                                 <a-input v-model:value="form.middle_name" />
-                                
                             </a-form-item>
                             <a-form-item
                                 required
@@ -513,7 +564,6 @@ const calculateAge = () => {
                             </a-form-item>
                             <a-form-item label="Age" name="age">
                                 <a-input v-model:value="age" disabled />
-                                
                             </a-form-item>
                             <a-form-item
                                 required
@@ -638,7 +688,9 @@ const calculateAge = () => {
                                 </a-select>
                                 <InputError
                                     class="mt-2"
-                                    :message="form.errors['address.municipality']"
+                                    :message="
+                                        form.errors['address.municipality']
+                                    "
                                 />
                             </a-form-item>
                             <a-form-item required label="Barangay">
@@ -710,7 +762,6 @@ const calculateAge = () => {
                                 />
                             </a-form-item>
                         </div>
-                    
                     </a-card>
                     <div class="flex justify-end mt-5">
                         <a-button class="mr-2" @click.prevent="handleCancel"

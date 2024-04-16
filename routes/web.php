@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
 
         Route::put('/students/{student}/archive', [StudentController::class, 'archive'])->name('student.archive');
         Route::put('/students/{student}/archive-restore', [StudentController::class, 'archiveRestore'])->name('student.archive-restore');
+        Route::put('/enroll-students', [StudentController::class, 'enrollStudents'])->name('students.enroll');
         
     });
 

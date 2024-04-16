@@ -44,7 +44,7 @@ class StudentController extends Controller
             ->orderBy('grade')
             ->get();
 
-        return Inertia::render('Admin/Students/List/Index', [
+        return Inertia::render('Admin/Students/Index', [
             'students' => StudentResource::collection($students),
             'fees' => FeeResource::collection($fees),
             'grades' => $grades
@@ -119,6 +119,7 @@ class StudentController extends Controller
                 'status' => 'active',
                 'active_school_year_id' => $request->school_year_id,
                 'student_fees' => $validated['student_fees'],
+                'enrolled_school_years' => [$request->current_school_year . '']
             ]
         )->assignRole('student');
 
@@ -169,5 +170,26 @@ class StudentController extends Controller
     public function filterStudent()
     {
         return Inertia::render('Admin/Students/Dashboard/Index');
+    }
+
+    public function enrollStudents(Request $request) 
+    {
+        foreach($request->students as $key => $id) {
+            $studentSchoolYears = User::find($id);
+            $student = null;
+            if($studentSchoolYears->enrolled_school_years == null) {
+                $student = [$request->current_school_year];
+            } else {
+                $student = $studentSchoolYears->enrolled_school_years;
+                if(!in_array($request->current_school_year, $student)) {
+                    array_push($student, $request->current_school_year);
+                }
+            }
+            User::where('id', $id)->update([
+                'active_school_year_id' => $request->current_school_year,
+                'enrolled_school_years' => $student
+            ]);
+        }
+        return redirect()->back();
     }
 }

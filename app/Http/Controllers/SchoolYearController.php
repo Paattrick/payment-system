@@ -11,9 +11,20 @@ class SchoolYearController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $request->merge([
+            'per_page' => $request->per_page ?: '15',
+        ]);
+
+        $school_years = SchoolYear::query()
+            ->whereNotNull('name')
+            ->latest()
+            ->paginate($request->per_page);
+
+        return Inertia::render('Admin/SchoolYears/Index', [
+            'school_years' => $school_years
+        ]);
     }
 
     /**
@@ -63,14 +74,28 @@ class SchoolYearController extends Controller
      */
     public function update(Request $request, SchoolYear $school_year)
     {
-        $school_year->update([
-            'status' => 'active'
-        ]);
+        if($request->has('current_school_year')) {
+            $school_year->update([
+                'current_school_year' => $request->current_school_year,
+                'name' => $request->name
+            ]);
+            
+            SchoolYear::where('id', '!=', $request->id)
+                ->update(['current_school_year' => 0]);
 
-        $data = SchoolYear::where('id', '!=', $school_year->id)
-            ->update(['status' => 'inactive']);
+            return redirect()->back();
 
-        return response($data);
+        } else {
+
+            $school_year->update([
+                'status' => 'active'
+            ]);
+    
+            $data = SchoolYear::where('id', '!=', $school_year->id)
+                ->update(['status' => 'inactive']);
+    
+            return response($data);
+        }
     }
 
     /**

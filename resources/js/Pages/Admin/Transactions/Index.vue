@@ -15,7 +15,7 @@ const page = usePage();
 const form = useForm({
     name: null,
     meta: [],
-    collector_id: page.props.auth?.user?.id
+    collector_id: page.props.auth?.user?.id,
 });
 
 const selectedStudentId = ref(null);
@@ -76,7 +76,7 @@ const submit = () => {
             transactionId: transactionId.value,
             type: type.value,
             reference: reference.value,
-            collector_id: form.collector_id
+            collector_id: form.collector_id,
         },
         {
             preserveScroll: true,
