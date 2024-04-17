@@ -21,7 +21,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $authUser = Auth::user();
-       
+        
         if($authUser != null && $authUser->status == 'archived') {
             Auth::logout();
             return Redirect::route('login');
@@ -51,7 +51,13 @@ class DashboardController extends Controller
 
             $activeSchoolYear = SchoolYear::query()
                 ->where('current_school_year', 1)
-                ->firstOrFail();
+                ->first();
+            
+            $totalCollected = 0;
+            $total = 0;
+            if($activeSchoolYear !== null)
+            {
+                
             
             $collectibles = Fee::query()
                 ->where('school_year_id', $activeSchoolYear->id)
@@ -59,7 +65,6 @@ class DashboardController extends Controller
                 ->toArray();
 
             $collectiblesCollection = collect($collectibles);
-            $total = 0;
             
             foreach($collectiblesCollection as $val) {
                 $total = $total + floatval($val['total_collectibles']);
@@ -73,7 +78,7 @@ class DashboardController extends Controller
     
                 $collectedCollectiblesCollection = collect($collectedCollectibles);
                 
-                $totalCollected = 0;
+                
                 
                 foreach($collectedCollectiblesCollection as $val) {
                     foreach($val['meta'] as $meta) {
@@ -82,6 +87,7 @@ class DashboardController extends Controller
                        }
                     }
                 }
+            }
             
             return Inertia::render('Dashboard', [
                 'students' => $user,

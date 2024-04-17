@@ -105,7 +105,6 @@ const handleChangeDate = () => {
 const showReportModal = ref(false);
 
 const handleModalReport = (type) => {
-    console.log(type);
     reportType.value = type;
     showReportModal.value = true;
 };
@@ -174,7 +173,8 @@ const handleModalReport = (type) => {
                                     <div class="font-bold mt-5 mb-5">
                                         Total Collectibles of
                                         {{
-                                            page.props.activeSchoolYear[0].name
+                                            page.props?.activeSchoolYear[0]
+                                                ?.name
                                         }}
                                     </div>
                                 </div>
@@ -222,7 +222,8 @@ const handleModalReport = (type) => {
                                     <div class="font-bold mt-5">
                                         Amounts Received of
                                         {{
-                                            page.props.activeSchoolYear[0].name
+                                            page.props?.activeSchoolYear[0]
+                                                ?.name
                                         }}
                                     </div>
                                 </div>
@@ -271,7 +272,8 @@ const handleModalReport = (type) => {
                                     <div class="font-bold mt-5 mb-5">
                                         Remaining Collectibles of
                                         {{
-                                            page.props.activeSchoolYear[0].name
+                                            page.props?.activeSchoolYear[0]
+                                                ?.name
                                         }}
                                     </div>
                                 </div>
