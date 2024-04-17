@@ -169,10 +169,10 @@ const submit = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            showModal.value = false;
             form.reset();
             total_collectibles.value = 0;
             setTable();
+            showModal.value = false;
         },
     });
 };

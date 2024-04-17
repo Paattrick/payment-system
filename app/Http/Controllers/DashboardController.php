@@ -84,7 +84,7 @@ class DashboardController extends Controller
 
                 $row = [
                     'Total Collectibles' => $data[0],
-                    $data[1] == 'daily' ? 'Date' : 'Selected Month' => $data[1] == 'daily' ? Carbon::parse($data[2])->toDateString() : Carbon::parse($data[2][0])->toDateString() .' - '. Carbon::parse($data[2][1])->toDateString(),
+                    $data[1] == 'daily' ? 'Date' : 'Selected Month' => $data[1] == 'daily' ? $data[2] : Carbon::parse($data[2][0])->toDateString() .' - '. Carbon::parse($data[2][1])->toDateString(),
                     
                 ];
                 // Arr::forget($row, $excludeColumn);
