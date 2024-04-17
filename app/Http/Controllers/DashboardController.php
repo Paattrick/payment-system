@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User;
+use App\Models\Fee;
 use App\Models\History;
 use App\Http\Resources\StudentResource;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Redirect;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 use Illuminate\Support\Arr;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -57,6 +59,7 @@ class DashboardController extends Controller
 
     public function export($data, $type)
     {
+        // dd($data);
         if($type == 'generateTotalEnrolledStudents') {
 
             $csv = SimpleExcelWriter::streamDownload('students.csv');
@@ -76,12 +79,27 @@ class DashboardController extends Controller
             }
         }
 
+        if($type == 'generateTotalCollectibles') {
+
+            $csv = SimpleExcelWriter::streamDownload('totalCollectibles.csv');
+
+                $row = [
+                    'Total Collectibles' => $data[0],
+                    $data[1] == 'daily' ? 'Date' : 'Selected Month' => $data[1] == 'daily' ? Carbon::parse($data[1])->toDateString() : Carbon::parse($data[2][0])->toDateString() .' - '. Carbon::parse($data[2][1])->toDateString(),
+                    
+                ];
+                // Arr::forget($row, $excludeColumn);
+    
+                $csv->addRow($row);
+                
+        }
+
         return $csv->toBrowser();
     }
 
-    public function getExportType(Request $request) {
+    public function getExportType(Request $request) 
+    {
         if($request->type == 'generateTotalEnrolledStudents') {
-
             $students = User::query()
                 ->whereHas('roles', fn ($query) => $query->where('name', 'student'))
                 ->whereNotNull('name')
@@ -100,9 +118,53 @@ class DashboardController extends Controller
             $studentsCollection = collect($students);
             
             $this->export($studentsCollection, $request->type);
-            // foreach ($studentsCollection as $data) {
-            //     dd(data_get($data, 'name'));
-            // }
+        }
+
+        if($request->type == 'generateTotalCollectibles') {
+
+            if($request->collectiblesType == null) {
+                $collectibles = Fee::query()
+                    ->where('school_year_id', $request->school_year)
+                    ->get()
+                    ->toArray();
+    
+                $collectiblesCollection = collect($collectibles);
+                $total = 0;
+                
+                foreach($collectiblesCollection as $val) {
+                    $total = $total + floatval($val['total_collectibles']);
+                }
+            }
+            
+            if($request->collectiblesType != null) {
+                $collectibles = History::query()
+                    ->where('school_year_id', $request->school_year)
+                    ->when($request->collectiblesType == 'daily', function ($query, $filter) use ($request) {
+                        $query->whereDate('created_at', Carbon::parse($request->collectiblesDate)->toDateString());
+                    })
+                    ->when($request->collectiblesType == 'monthly', function ($query, $filter) use ($request) {
+                        $query->whereBetween('created_at', [Carbon::parse($request->collectiblesDate[0])->toDateString(), Carbon::parse($request->collectiblesDate[1])->toDateString()]);
+                    })
+                    ->where('status', 'accepted')
+                    ->get()
+                    ->toArray();
+    
+                $collectiblesCollection = collect($collectibles);
+                
+                $total = 0;
+                
+                foreach($collectiblesCollection as $val) {
+                    foreach($val['meta'] as $meta) {
+                       foreach($meta['meta'] as $data) {
+                           $total = $total + floatval($data['totalPaid']);
+                       }
+                    }
+                }
+            }
+
+            $data = [$total, $request->collectiblesType, $request->collectiblesDate];
+            
+            $this->export($data, $request->type);
         }
     }
 }

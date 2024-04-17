@@ -24,6 +24,7 @@ const page = usePage();
 const isDisable = ref(false);
 const toPay = ref([]);
 const modeOfPayment = ref(null);
+const school_year_id = ref(null);
 
 onMounted(() => {
     dataTable.value.meta = [...page.props.auth.user.student_fees];
@@ -119,26 +120,6 @@ const setTable = () => {
         router.put(route("syncStudentFees.store", page.props.auth.user.id), {
             meta: dataTable.value.meta,
         });
-        // dataTable.value.meta.forEach((fees) => {
-        //     props.fees.data.forEach((data) => {
-        //         if (Number(fees.id) != Number(data.id)) {
-        //             dataTable.value.meta.push({
-        //                 meta: e.meta,
-        //                 name: e.name,
-        //                 id: e.id,
-        //                 school_year: e.school_year,
-        //             });
-        //         }
-        //     });
-        // });
-
-        // console.log(temp);
-        // return dataTable.value.meta.length.find(c => c.id === county.toLowerCase())?.link
-
-        // router.put(route("syncStudentFees.store", page.props.auth.user.id), {
-        //     meta: dataTable.value.meta,
-        // });
-        console.log(dataTable.value, "test");
     }
 
     form.meta = dataTable.value;
@@ -151,6 +132,7 @@ const handleCancel = () => {
         });
     });
     form.errors = {};
+    totalToPay.value = 0;
     showModal.value = false;
 };
 
@@ -186,6 +168,7 @@ const submit = () => {
                     ? reference.value
                     : `CASH-${Math.ceil(Math.random() * 1000000)}`,
             type: modeOfPayment.value,
+            school_year_id: page.props.activeSchoolYear[0].id,
         }),
         {
             onSuccess: () => {
@@ -287,7 +270,7 @@ const handlePayment = () => {
         if (totalToPay.value == 0) {
             showModal.value = false;
         } else {
-            showPaymentModal.value = true;
+            showQr.value = true;
         }
     } else {
         message.error(form.errors.payment);
@@ -298,7 +281,15 @@ const handlePayment = () => {
 const selectedImage = ref(null);
 
 const onChangeAmount = (event) => {
+    let tempTotal = 0;
     onlyPending.value = false;
+    toPay.value.map((e) => {
+        e.meta.map((val) => {
+            tempTotal = tempTotal + Number(val.toPay);
+        });
+    });
+
+    totalToPay.value = tempTotal;
 };
 
 const handleChangeModePayment = () => {
@@ -333,6 +324,18 @@ const handleChangeModePayment = () => {
                                             style: "currency",
                                             currency: "PHP",
                                         }).format(runningBalance)
+                                    }}
+                                </div>
+                                <div
+                                    v-if="totalToPay > 0"
+                                    class="font-bold text-lg"
+                                >
+                                    Total To Pay:
+                                    {{
+                                        new Intl.NumberFormat("PHP", {
+                                            style: "currency",
+                                            currency: "PHP",
+                                        }).format(totalToPay)
                                     }}
                                 </div>
                                 <div>
@@ -464,12 +467,16 @@ const handleChangeModePayment = () => {
                                             </div>
                                             <div
                                                 v-if="val.status == 'pending'"
-                                                class="pt-1.5"
+                                                class="pt-1.5 w-full"
                                             >
-                                                <span class="text-sm">
-                                                    You have a pending request
-                                                    on this
-                                                </span>
+                                                <a-tag
+                                                    class="font-semibold"
+                                                    color="#d97706"
+                                                >
+                                                    <span class="text-sm">
+                                                        payment request pending
+                                                    </span>
+                                                </a-tag>
                                             </div>
                                             <div v-else>
                                                 <a-form>

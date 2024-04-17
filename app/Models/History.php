@@ -18,7 +18,8 @@ class History extends Model
         'status',
         'reference',
         'note',
-        'mode_of_payment'
+        'mode_of_payment',
+        'school_year_id'
     ];
 
     protected $casts = [

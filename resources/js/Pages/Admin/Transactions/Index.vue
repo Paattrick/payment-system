@@ -67,6 +67,7 @@ const submit = () => {
             }
             meta.toPay = 0;
             meta.status = "accepted";
+            meta.totalPaid = Number(meta.amount) - Number(meta.balance);
         });
     });
     router.post(
@@ -77,6 +78,7 @@ const submit = () => {
             type: type.value,
             reference: reference.value,
             collector_id: form.collector_id,
+            school_year_id: page.props.activeSchoolYear[0].id,
         },
         {
             preserveScroll: true,
@@ -143,7 +145,9 @@ const submitDecline = () => {
             transactionId: transactionId.value,
             note: note.value,
             type: type.value,
+            collector_id: page.props.auth?.user?.id,
             reference: reference.value,
+            school_year_id: page.props.activeSchoolYear[0]?.id,
         },
         {
             preserveScroll: true,

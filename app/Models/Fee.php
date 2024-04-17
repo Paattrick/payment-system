@@ -12,10 +12,16 @@ class Fee extends Model
     protected $fillable = [
         'meta',
         'school_year_id',
-        'name'
+        'name',
+        'total_collectibles'
     ];
 
     protected $casts = [
         'meta' => 'json',
     ];
+
+    public function user()
+    {
+        return $this->belongsToMany(Fee::class);
+    }
 }

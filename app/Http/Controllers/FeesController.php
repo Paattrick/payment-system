@@ -47,17 +47,20 @@ class FeesController extends Controller
             'meta.*.amount' => 'required|decimal:0,2',
             'meta.*.toPay' => 'required|decimal:0,2',
             'meta.*.balance' => 'required|decimal:0,2',
+            'meta.*.totalPaid' => 'required|decimal:0,2',
         ], [
             'meta.*.clearance.distinct' => 'Duplicate value.',
             'meta.*.amount.decimal' => 'Amount must be decimal.',
             'meta.*.toPay' => 'Amount to pay must be decimal.',
             'meta.*.balance' => 'Balance must be decimal.',
+            'meta.*.totalPaid' => 'required|decimal:0,2',
         ]);
         
         Fee::create([
             'meta' => $validated['meta'],
             'school_year_id' => $validated['school_year'],
-            'name' => $validated['name']
+            'name' => $validated['name'],
+            'total_collectibles' => $request->collectibles
         ]);
 
         return redirect()->back();
@@ -68,8 +71,27 @@ class FeesController extends Controller
      */
     public function update(Request $request, Fee $fee)
     {
+
+        $validated = $request->validate([
+            'name' => 'required|string|unique:fees,name,'. $fee->id,
+            'school_year' => 'required|integer',
+            'meta' => 'required|array',
+            'meta.*.clearance' => 'required|string|distinct',
+            'meta.*.amount' => 'required|decimal:0,2',
+            'meta.*.toPay' => 'required|decimal:0,2',
+            'meta.*.balance' => 'required|decimal:0,2',
+        ], [
+            'meta.*.clearance.distinct' => 'Duplicate value.',
+            'meta.*.amount.decimal' => 'Amount must be decimal.',
+            'meta.*.toPay' => 'Amount to pay must be decimal.',
+            'meta.*.balance' => 'Balance must be decimal.',
+        ]);
+
         $fee->update([
-            'meta' => $request->fees
+            'meta' => $validated['meta'],
+            'school_year_id' => $validated['school_year'],
+            'name' => $validated['name'],
+            'total_collectibles' => $request->collectibles
         ]);
 
         $fee->save();

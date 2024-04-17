@@ -60,4 +60,9 @@ class User extends Authenticatable
         'password' => 'hashed',
         'enrolled_school_years' => 'array'
     ];
+
+    public function fee()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

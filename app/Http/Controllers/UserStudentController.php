@@ -47,7 +47,8 @@ class UserStudentController extends Controller
                 'file' => $fileName,
                 'status' => 'pending',
                 'reference' => $validateFile['reference'],
-                'mode_of_payment' => $request->type
+                'mode_of_payment' => $request->type,
+                'school_year_id' => intval($request->school_year_id)
             ]);
 
             $student->update([
@@ -62,7 +63,8 @@ class UserStudentController extends Controller
                 'meta' => $request->fees,
                 'status' => 'pending',
                 'reference' => $validateFile['reference'],
-                'mode_of_payment' => $request->type
+                'mode_of_payment' => $request->type,
+                'school_year_id' => intval($request->school_year_id)
             ]);
             
             $student->update([
@@ -82,9 +84,11 @@ class UserStudentController extends Controller
 
         $history = History::where('id', $request->transactionId)
             ->update([
+                'meta' => $request->meta,
                 'status' => 'accepted',
                 'collector_id' => $request->collector_id,
-                'reference' =>  $request->type == 'cash' ? 'CASH-'. $request->transactionId : $request->reference
+                'reference' =>  $request->type == 'cash' ? 'CASH-'. $request->transactionId : $request->reference,
+                'school_year_id' => intval($request->school_year_id)
             ]);
 
         $student->save();
@@ -109,7 +113,9 @@ class UserStudentController extends Controller
             ->update([
                 'status' => 'declined',
                 'note' => $request->note,
-                'reference' => $request->type == 'cash' ? 'CASH-'. $request->transactionId : $request->reference
+                'reference' => $request->type == 'cash' ? 'CASH-'. $request->transactionId : $request->reference,
+                'school_year_id' => intval($request->school_year_id),
+                'collector_id' => $request->collector_id,
             ]);
 
         $student->update([

@@ -59,6 +59,10 @@ const testSections = ref([]);
 const dataTable = ref([]);
 
 onMounted(() => {
+    setTable();
+});
+
+const setTable = () => {
     props.students.data.map((e) => {
         if (
             e.enrolled_school_years.includes(
@@ -68,8 +72,7 @@ onMounted(() => {
             dataTable.value.push(e);
         }
     });
-});
-
+};
 watchDebounced(
     [search, grade, section],
     (data) => {
@@ -354,6 +357,8 @@ const submit = () => {
         preserveState: true,
         onSuccess: () => {
             showModal.value = false;
+            dataTable.value = null;
+            setTable();
         },
     });
 };
@@ -364,6 +369,8 @@ const update = () => {
         preserveState: true,
         onSuccess: () => {
             showModal.value = false;
+            dataTable.value = null;
+            setTable();
         },
     });
 };
@@ -375,13 +382,19 @@ const handleDelete = (val) => {
         content: "archived students can be accessed in Archives.",
         okText: "OK",
         onOk() {
-            router.put(route("student.archive", val.id));
-            notification.success({
-                placement: "topRight",
-                duration: 3,
-                rtl: true,
-                message: "Successfully Sent to Archives",
-                description: "Archived students can be accessed in Archives.",
+            router.put(route("student.archive", val.id), {
+                onSuccess: () => {
+                    dataTable.value = null;
+                    setTable();
+                    notification.success({
+                        placement: "topRight",
+                        duration: 3,
+                        rtl: true,
+                        message: "Successfully Sent to Archives",
+                        description:
+                            "Archived students can be accessed in Archives.",
+                    });
+                },
             });
         },
         cancelText: "Cancel",

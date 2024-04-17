@@ -15,7 +15,7 @@ const [modal] = Modal.useModal();
 
 const props = defineProps({
     fees: Object,
-    school_years: Object
+    school_years: Object,
 });
 
 const page = usePage();
@@ -24,6 +24,7 @@ const form = useForm({
     meta: [],
     name: null,
     school_year: null,
+    collectibles: 0,
 });
 
 const clearance = ref("");
@@ -93,6 +94,7 @@ const handleCancel = () => {
     refresh();
     form.reset();
     form.errors = {};
+    total_collectibles.value = 0;
     showModal.value = false;
 };
 
@@ -123,6 +125,9 @@ const addField = () => {
             toPay: parseFloat(toPay.value).toFixed(2),
             balance: parseFloat(amount.value).toFixed(2),
             status: null,
+            totalPaid:
+                parseFloat(amount.value).toFixed(2) -
+                parseFloat(amount.value).toFixed(2),
         });
         clearance.value = null;
         amount.value = 0;
@@ -139,31 +144,58 @@ const handleEdit = (val) => {
     handleSelectedId.value = val.id;
     form.meta = val.meta;
     form.name = val.name;
+    props.school_years.map((e) => {
+        if (e.id == val.school_year_id) {
+            form.school_year = e.name;
+        }
+    });
 
     showModal.value = true;
     isEditing.value = true;
 };
 
+const total_collectibles = ref(0);
+
 const submit = () => {
     if (form.meta.length == 0) {
         return message.error("Specific is required");
     }
+
+    form.meta.map((e) => {
+        total_collectibles.value = total_collectibles.value + Number(e.amount);
+    });
+    form.collectibles = total_collectibles.value;
     form.post(route("fees.store"), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
             showModal.value = false;
             form.reset();
+            total_collectibles.value = 0;
+            setTable();
         },
     });
 };
 
 const update = () => {
+    form.meta.map((e) => {
+        total_collectibles.value = total_collectibles.value + Number(e.amount);
+    });
+    form.collectibles = total_collectibles.value;
+    props.school_years.map((e) => {
+        if (e.name == form.school_year) {
+            form.school_year = e.id;
+        }
+    });
     form.put(route("fees.update", handleSelectedId.value), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
             showModal.value = false;
+            setTable();
+        },
+        onError: (e) => {
+            total_collectibles.value = 0;
         },
     });
 };
@@ -174,7 +206,11 @@ const handleDelete = (val) => {
         icon: h(ExclamationCircleFilled),
         okText: "OK",
         onOk() {
-            router.delete(route("fees.destroy", val.id));
+            router.delete(route("fees.destroy", val.id), {
+                onSuccess: () => {
+                    setTable();
+                },
+            });
             message.success("Successfully Deleted!");
         },
         cancelText: "Cancel",
@@ -183,6 +219,11 @@ const handleDelete = (val) => {
 
 const refresh = () => {
     location.reload();
+};
+
+const handleChangeClearance = () => {
+    total_collectibles.value = 0;
+    form.errors = {};
 };
 </script>
 <template>
@@ -263,7 +304,7 @@ const refresh = () => {
                                 <div @click="handleDelete(slotProps.record)">
                                     <a-tooltip placement="topLeft">
                                         <template #title>
-                                            <span>Archive</span>
+                                            <span>Delete Fee</span>
                                         </template>
                                         <a-button><RestFilled /></a-button>
                                     </a-tooltip>
@@ -294,12 +335,14 @@ const refresh = () => {
                                 (input, option) =>
                                     option.label
                                         .toLowerCase()
-                                        .indexOf(input.toLowerCase()) >=
-                                    0
+                                        .indexOf(input.toLowerCase()) >= 0
                             "
                         >
                         </a-select>
-                        <InputError class="mt-2" :message="form.errors.name" />
+                        <InputError
+                            class="mt-2"
+                            :message="form.errors.school_year"
+                        />
                     </a-form-item>
                     <a-form-item required label="Name of collection">
                         <a-input v-model:value="form.name" />
@@ -307,7 +350,10 @@ const refresh = () => {
                     </a-form-item>
                     <a-card title="Specific">
                         <a-form-item required label="Name">
-                            <a-input v-model:value="clearance" />
+                            <a-input
+                                @change="handleChangeClearance"
+                                v-model:value="clearance"
+                            />
                         </a-form-item>
                         <a-form-item required label="Amount">
                             <a-input v-model:value="amount" />
@@ -331,7 +377,14 @@ const refresh = () => {
                                     >
                                         {{ record.clearance }}
                                         <div>
-                                            <InputError class="mt-2" :message="form.errors[`meta.${index}.clearance`]" />
+                                            <InputError
+                                                class="mt-2"
+                                                :message="
+                                                    form.errors[
+                                                        `meta.${index}.clearance`
+                                                    ]
+                                                "
+                                            />
                                         </div>
                                     </template>
                                     <template

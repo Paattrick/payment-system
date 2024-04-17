@@ -5,6 +5,7 @@ import TableComponent from "@/Components/Table.vue";
 import { ref, computed } from "vue";
 import { onMounted } from "vue";
 import { composables } from "@/Composables/index.js";
+import dayjs from "dayjs";
 
 const props = defineProps({
     students: Object,
@@ -18,14 +19,11 @@ const reportType = ref(null);
 const grade = ref(null);
 const section = ref(null);
 const status = ref(null);
+const dateSelected = ref(null);
+const collectiblesDate = ref(null);
+const collectiblesType = ref(null);
+const dateRange = ref(null);
 
-// onMounted(() => {
-//     setInterval(refreshNotification, 5000);
-// });
-
-const refreshNotification = () => {
-    router.reload({ only: ["history"] });
-};
 const columns = ref([
     {
         title: "Last Name",
@@ -78,8 +76,26 @@ const exportLink = computed(() => {
         grade: grade.value,
         section: section.value,
         status: status.value,
+        school_year: dateSelected.value,
+        collectiblesType: collectiblesType.value,
+        collectiblesDate:
+            collectiblesType.value == "daily"
+                ? dayjs(collectiblesDate.value).format("YYYY/MM/DD")
+                : [firstDate.value, secondDate.value],
     });
 });
+
+const focus = () => {
+    console.log("focus");
+};
+const firstDate = ref(null);
+const secondDate = ref(null);
+const handleChangeDate = () => {
+    if (dateRange.value != null) {
+        firstDate.value = dayjs(dateRange.value[0]).format("YYYY/MM/DD");
+        secondDate.value = dayjs(dateRange.value[1]).format("YYYY/MM/DD");
+    }
+};
 </script>
 
 <template>
@@ -149,9 +165,9 @@ const exportLink = computed(() => {
                                 value="generateTotalEnrolledStudents"
                                 >Generate Students Report</a-select-option
                             >
-                            <!-- <a-select-option value="generateTotalMoneyCollected"
-                                >Total Money Collected</a-select-option
-                            > -->
+                            <a-select-option value="generateTotalCollectibles"
+                                >Generate Total Collectibles</a-select-option
+                            >
                         </a-select>
                         <div
                             class="mt-5 flex space-x-4"
@@ -212,6 +228,65 @@ const exportLink = computed(() => {
                                     >
                                 </a-select>
                             </div>
+                        </div>
+                        <div
+                            class="mt-5 flex space-x-4"
+                            v-if="reportType == 'generateTotalCollectibles'"
+                        >
+                            <a-form-item label="Select School Year">
+                                <a-select
+                                    ref="select"
+                                    v-model:value="dateSelected"
+                                    style="width: 120px"
+                                    @focus="focus"
+                                    @change="handleChangeDate"
+                                >
+                                    <a-select-option
+                                        v-for="(date, index) in page.props
+                                            .schoolYears"
+                                        :index="index"
+                                        :value="date.id"
+                                    >
+                                        {{ date.name }}
+                                    </a-select-option>
+                                </a-select>
+                            </a-form-item>
+                            <a-form-item label="Select Report Type">
+                                <a-select
+                                    ref="select"
+                                    v-model:value="collectiblesType"
+                                    style="width: 120px"
+                                    @focus="focus"
+                                    allowClear
+                                >
+                                    <a-select-option index="0" value="daily">
+                                        Daily
+                                    </a-select-option>
+                                    <a-select-option index="1" value="monthly">
+                                        Monthly
+                                    </a-select-option>
+                                </a-select>
+                            </a-form-item>
+                            <a-form-item
+                                v-if="collectiblesType != null"
+                                label="Select Date"
+                            >
+                                <a-date-picker
+                                    v-if="collectiblesType == 'daily'"
+                                    v-model:value="collectiblesDate"
+                                    format="YYYY/MM/DD"
+                                />
+                                <!-- <a-date-picker
+                                    v-if="collectiblesType == 'monthly'"
+                                    v-model:value="collectiblesDate"
+                                    picker="month"
+                                /> -->
+                                <a-range-picker
+                                    v-if="collectiblesType == 'monthly'"
+                                    v-model:value="dateRange"
+                                    @change="handleChangeDate"
+                                />
+                            </a-form-item>
                         </div>
                         <div class="flex justify-end mt-5">
                             <a target="_blank" :href="exportLink">
