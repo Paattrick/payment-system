@@ -148,21 +148,23 @@ watch(
 watch(
     () => form.contact_number,
     (newValue, oldValue) => {
-        const numericValue = newValue.replace(/\D/g, "");
+        if (newValue) {
+            const numericValue = newValue.replace(/\D/g, "");
 
-        if (!Number.isInteger(Number(numericValue))) {
-            console.error("Error: Contact number must be an integer.");
+            if (!Number.isInteger(Number(numericValue))) {
+                console.error("Error: Contact number must be an integer.");
 
-            form.contact_number = oldValue;
-            return;
-        }
+                form.contact_number = oldValue;
+                return;
+            }
 
-        if (numericValue.length > 11) {
-            console.error("Error: Contact number cannot exceed 11 digits.");
+            if (numericValue.length > 11) {
+                console.error("Error: Contact number cannot exceed 11 digits.");
 
-            form.contact_number = numericValue.slice(0, 11);
-        } else {
-            form.contact_number = numericValue;
+                form.contact_number = numericValue.slice(0, 11);
+            } else {
+                form.contact_number = numericValue;
+            }
         }
     },
     { deep: true }
@@ -171,21 +173,23 @@ watch(
 watch(
     () => form.lrn,
     (newValue, oldValue) => {
-        const numericValue = newValue.replace(/\D/g, "");
+        if (newValue) {
+            const numericValue = newValue.replace(/\D/g, "");
 
-        if (!Number.isInteger(Number(numericValue))) {
-            console.error("Error: Lrn must be an integer.");
+            if (!Number.isInteger(Number(numericValue))) {
+                console.error("Error: Lrn must be an integer.");
 
-            form.lrn = oldValue;
-            return;
-        }
+                form.lrn = oldValue;
+                return;
+            }
 
-        if (numericValue.length > 11) {
-            console.error("Error: Lrn cannot exceed 11 digits.");
+            if (numericValue.length > 11) {
+                console.error("Error: Lrn cannot exceed 11 digits.");
 
-            form.lrn = numericValue.slice(0, 11);
-        } else {
-            form.lrn = numericValue;
+                form.lrn = numericValue.slice(0, 11);
+            } else {
+                form.lrn = numericValue;
+            }
         }
     },
     { deep: true }

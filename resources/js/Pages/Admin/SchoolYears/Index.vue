@@ -18,6 +18,8 @@ const form = useForm({
     current_school_year: null,
 });
 
+console.log(props.school_years);
+
 const selectedStudentId = ref(null);
 const selectedFile = ref(null);
 
@@ -44,7 +46,6 @@ const loading = ref(false);
 const showModal = ref(false);
 
 const viewSchoolYear = (data) => {
-    console.log(data);
     form.id = data.id;
     form.name = data.name;
     form.current_school_year = data.current_school_year;

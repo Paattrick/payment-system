@@ -122,7 +122,22 @@ const setTable = () => {
         });
     }
 
-    form.meta = dataTable.value;
+    let tempData = [];
+    dataTable.value.meta.map((e) => {
+        if (
+            Number(e.school_year_id) ==
+            Number(page.props.activeSchoolYear[0].id)
+        ) {
+            tempData.push({
+                meta: data.meta,
+                name: data.name,
+                id: data.id,
+                school_year_id: data.school_year_id,
+            });
+        }
+    });
+    dataTable.value.meta = tempData;
+    form.meta = tempData;
 };
 
 const handleCancel = () => {
@@ -326,18 +341,7 @@ const handleChangeModePayment = () => {
                                         }).format(runningBalance)
                                     }}
                                 </div>
-                                <div
-                                    v-if="totalToPay > 0"
-                                    class="font-bold text-lg"
-                                >
-                                    Total To Pay:
-                                    {{
-                                        new Intl.NumberFormat("PHP", {
-                                            style: "currency",
-                                            currency: "PHP",
-                                        }).format(totalToPay)
-                                    }}
-                                </div>
+
                                 <div>
                                     <a-button
                                         :disabled="!isDisable"
@@ -505,6 +509,15 @@ const handleChangeModePayment = () => {
                             </template>
                         </template>
                     </a-table>
+                    <div class="text-lg">
+                        Total:
+                        {{
+                            new Intl.NumberFormat("PHP", {
+                                style: "currency",
+                                currency: "PHP",
+                            }).format(totalToPay)
+                        }}
+                    </div>
                 </div>
                 <div class="flex justify-end">
                     <a-button
