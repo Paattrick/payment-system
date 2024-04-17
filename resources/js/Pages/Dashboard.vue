@@ -167,7 +167,10 @@ const handleModalReport = (type) => {
                                             new Intl.NumberFormat("PHP", {
                                                 style: "currency",
                                                 currency: "PHP",
-                                            }).format(props.totalCollectibles)
+                                            }).format(
+                                                props.totalCollectibles *
+                                                    Number(props.activeStudents)
+                                            )
                                         }}
                                     </div>
                                     <div class="font-bold mt-5 mb-5">
