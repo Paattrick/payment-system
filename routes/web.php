@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/billings/payments', [UserStudentController::class, 'payments'])->name('payments.index');
         Route::get('/history', [UserHistoryController::class, 'index'])->name('student-history.index');
+        Route::get('/get-fees', [UserHistoryController::class, 'getFees'])->name('get.fees');
     });
 
     Route::group(['prefix' => 'collector', 'middleware' => 'role:collector'], function () {

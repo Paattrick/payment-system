@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\History;
+use App\Models\Fee;
 use App\Http\Resources\HistoryResource;
+use App\Http\Resources\FeeResource;
 use Illuminate\Support\Facades\Auth;
 
 class UserHistoryController extends Controller
@@ -26,5 +28,14 @@ class UserHistoryController extends Controller
         return Inertia::render('Student/History/Index', [
             'histories' => HistoryResource::collection($histories),
         ]);
+    }
+
+    public function getFees(Request $request)
+    {
+        $fees = Fee::query()
+            ->where('school_year_id', $request->school_year_id)
+            ->get();
+
+        return response(FeeResource::collection($fees));
     }
 }

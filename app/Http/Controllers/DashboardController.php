@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Fee;
 use App\Models\History;
+use App\Models\SchoolYear;
 use App\Http\Resources\StudentResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -47,12 +48,48 @@ class DashboardController extends Controller
             $archivedStudents = User::query()
                 ->where('status', 'archived')
                 ->count();
+
+            $activeSchoolYear = SchoolYear::query()
+                ->where('current_school_year', 1)
+                ->firstOrFail();
+            
+            $collectibles = Fee::query()
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->get()
+                ->toArray();
+
+            $collectiblesCollection = collect($collectibles);
+            $total = 0;
+            
+            foreach($collectiblesCollection as $val) {
+                $total = $total + floatval($val['total_collectibles']);
+            }
+
+            $collectedCollectibles = History::query()
+                    ->where('school_year_id',  $activeSchoolYear->id)
+                    ->where('status', 'accepted')
+                    ->get()
+                    ->toArray();
+    
+                $collectedCollectiblesCollection = collect($collectedCollectibles);
+                
+                $totalCollected = 0;
+                
+                foreach($collectedCollectiblesCollection as $val) {
+                    foreach($val['meta'] as $meta) {
+                       foreach($meta['meta'] as $data) {
+                           $totalCollected = $totalCollected + floatval($data['totalPaid']);
+                       }
+                    }
+                }
             
             return Inertia::render('Dashboard', [
                 'students' => $user,
                 'activeStudents' => $activeStudents,
                 'archivedStudents' => $archivedStudents,
-                'history' => $history
+                'history' => $history,
+                'totalCollectibles' => $total,
+                'collectedCollectibles' => $totalCollected
             ]);
         }
     }

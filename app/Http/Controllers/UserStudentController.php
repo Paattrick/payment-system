@@ -99,7 +99,7 @@ class UserStudentController extends Controller
     public function syncStudentFees(Request $request, User $student)
     {
         $student->update([
-            'meta' => $request->meta,
+            'student_fees' => $request->meta,
         ]);
 
         $student->save();

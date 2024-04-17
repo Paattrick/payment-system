@@ -48,7 +48,7 @@ const form = useForm({
     },
     school_year_id: page.props?.currentSchoolYear[0]?.id,
     current_school_year: page.props?.activeSchoolYear[0]?.id,
-    student_fees: { ...props.fees.data },
+    student_fees: null,
 });
 
 const search = ref(null);

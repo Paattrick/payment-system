@@ -7,6 +7,7 @@ import TableComponent from "@/Components/Table.vue";
 import InputError from "@/Components/InputError.vue";
 import moment from "moment";
 import "moment/dist/locale/zh-cn";
+import axios from "axios";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -27,7 +28,6 @@ const modeOfPayment = ref(null);
 const school_year_id = ref(null);
 
 onMounted(() => {
-    dataTable.value.meta = [...page.props.auth.user.student_fees];
     setTable();
     remainingBalance();
 });
@@ -85,59 +85,57 @@ const imageForm = useForm({
 const runningBalance = ref(null);
 
 const setTable = () => {
-    // page.props.auth.user.meta.map((e) => {
-    //     if (e.school_year != page.props.currentSchoolYear[0].name) {
-    //         dataTable.value.meta = [];
+    if (page.props.auth.user?.student_fees != null) {
+        dataTable.value.meta = [...page.props.auth.user?.student_fees];
+    }
+
+    // if (page.props.auth.user.student_fees.length == 0) {
+    //     props.fees.data.map((e) => {
+    //         if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+    //             dataTable.value.meta.push({
+    //                 meta: e.meta,
+    //                 name: e.name,
+    //                 id: e.id,
+    //                 school_year_id: e.school_year_id,
+    //             });
+    //         }
+    //     });
+    //     router.put(route("syncStudentFees.store", page.props.auth.user.id), {
+    //         meta: dataTable.value.meta,
+    //     });
+    // }
+
+    // let data = props.fees.data[props.fees.data.length - 1];
+
+    // if (dataTable.value.meta.length != props.fees.data.length) {
+    //     let data = props.fees.data[props.fees.data.length - 1];
+    //     dataTable.value.meta.push({
+    //         meta: data.meta,
+    //         name: data.name,
+    //         id: data.id,
+    //         school_year_id: data.school_year_id,
+    //     });
+    //     router.put(route("syncStudentFees.store", page.props.auth.user.id), {
+    //         meta: dataTable.value.meta,
+    //     });
+    // }
+
+    // let tempData = [];
+    // dataTable.value.meta.map((e) => {
+    //     if (
+    //         Number(e.school_year_id) ==
+    //         Number(page.props.activeSchoolYear[0].id)
+    //     ) {
+    //         tempData.push({
+    //             meta: data.meta,
+    //             name: data.name,
+    //             id: data.id,
+    //             school_year_id: data.school_year_id,
+    //         });
     //     }
     // });
-
-    if (page.props.auth.user.student_fees.length == 0) {
-        props.fees.data.map((e) => {
-            if (e.school_year_id == page.props.currentSchoolYear[0].id) {
-                dataTable.value.meta.push({
-                    meta: e.meta,
-                    name: e.name,
-                    id: e.id,
-                    school_year_id: e.school_year_id,
-                });
-            }
-        });
-        router.put(route("syncStudentFees.store", page.props.auth.user.id), {
-            meta: dataTable.value.meta,
-        });
-    }
-
-    let data = props.fees.data[props.fees.data.length - 1];
-
-    if (dataTable.value.meta.length != props.fees.data.length) {
-        let data = props.fees.data[props.fees.data.length - 1];
-        dataTable.value.meta.push({
-            meta: data.meta,
-            name: data.name,
-            id: data.id,
-            school_year_id: data.school_year_id,
-        });
-        router.put(route("syncStudentFees.store", page.props.auth.user.id), {
-            meta: dataTable.value.meta,
-        });
-    }
-
-    let tempData = [];
-    dataTable.value.meta.map((e) => {
-        if (
-            Number(e.school_year_id) ==
-            Number(page.props.activeSchoolYear[0].id)
-        ) {
-            tempData.push({
-                meta: data.meta,
-                name: data.name,
-                id: data.id,
-                school_year_id: data.school_year_id,
-            });
-        }
-    });
-    dataTable.value.meta = tempData;
-    form.meta = tempData;
+    // dataTable.value.meta = tempData;
+    // form.meta = tempData;
 };
 
 const handleCancel = () => {
@@ -312,6 +310,24 @@ const handleChangeModePayment = () => {
         reference.value = `CASH-${Math.ceil(Math.random() * 1000000)}`;
     }
 };
+
+const getAdmissions = () => {
+    axios
+        .get(
+            route("get.fees", {
+                school_year_id: page.props.activeSchoolYear[0].id,
+            })
+        )
+        .then((res) => {
+            dataTable.value.meta = res.data;
+            router.put(
+                route("syncStudentFees.store", page.props.auth.user.id),
+                {
+                    meta: dataTable.value.meta,
+                }
+            );
+        });
+};
 </script>
 <template>
     <AuthenticatedLayout>
@@ -329,6 +345,13 @@ const handleChangeModePayment = () => {
                         <div class="flex justify-between">
                             <div class="flex space-x-4">
                                 <a-button @click="refresh()">Refresh</a-button>
+                                <div v-if="!page.props.auth.user?.student_fees">
+                                    <a-button
+                                        type="primary"
+                                        @click="getAdmissions()"
+                                        >Get Admissions</a-button
+                                    >
+                                </div>
                             </div>
 
                             <div class="flex justify-end space-x-4">
