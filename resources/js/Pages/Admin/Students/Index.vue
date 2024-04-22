@@ -105,8 +105,9 @@ watch(grade, async (newValue, oldValue) => {
     if (newValue != oldValue) {
         testSections.value = [];
     }
+
     props.grades.map((e) => {
-        if (newValue == e.grade) {
+        if (newValue == e.id) {
             e.sections.forEach((section) => {
                 testSections.value.push({
                     label: section,
@@ -127,8 +128,9 @@ watch(
         if (newValue != oldValue) {
             testSections.value = [];
         }
+
         props.grades.map((e) => {
-            if (newValue == e.grade) {
+            if (newValue == e.id) {
                 e.sections.forEach((section) => {
                     testSections.value.push({
                         label: section,
@@ -517,7 +519,7 @@ const enrollStudents = () => {
                                         allowClear
                                         :options="
                                             props.grades.map((item) => ({
-                                                value: item.grade,
+                                                value: item.id,
                                                 label: item.grade,
                                             }))
                                         "
