@@ -745,7 +745,7 @@ const enrollStudents = () => {
                                     v-model:value="form.grade"
                                     :options="
                                         props.grades.map((item) => ({
-                                            value: item.grade,
+                                            value: item.id,
                                             label: item.grade,
                                         }))
                                     "

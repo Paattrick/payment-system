@@ -28,7 +28,7 @@ class User extends Authenticatable
         'birthday',
         'contact_number',
         'gender',
-        'grade',
+        'grade_id',
         'section',
         'address',
         'password',

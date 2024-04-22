@@ -129,7 +129,7 @@ const handleModalReport = (type) => {
                 </div></marquee
             >
         </div>
-        <div class="py-12">
+        <div class="">
             <div class="mx-auto sm:px-6 lg:px-8">
                 <div v-if="!page.props.auth.role.is_student" class="pb-5">
                     <div class="grid grid-cols-2 gap-4">
