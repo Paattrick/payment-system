@@ -2,8 +2,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, router, usePage } from "@inertiajs/vue3";
 import TableComponent from "@/Components/Table.vue";
-import { ref, computed } from "vue";
-import { onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { composables } from "@/Composables/index.js";
 import dayjs from "dayjs";
 import { MoreOutlined } from "@ant-design/icons-vue";
@@ -26,6 +25,7 @@ const dateSelected = ref(null);
 const collectiblesDate = ref(null);
 const collectiblesType = ref(null);
 const dateRange = ref(null);
+const countOfActiveStudents = ref([]);
 
 const columns = ref([
     {
@@ -61,13 +61,18 @@ const columns = ref([
     },
 ]);
 
-const handleRedirectToArchived = () => {
-    router.visit(route("archives.index"));
-};
-
-const handleRedirectToStudents = () => {
-    router.visit(route("students.index"));
-};
+onMounted(() => {
+    console.log(props);
+    props.activeStudents.map((e) => {
+        if (
+            e.enrolled_school_years.includes(
+                page.props.currentSchoolYear[0].id.toString()
+            )
+        ) {
+            countOfActiveStudents.value.push(e);
+        }
+    });
+});
 
 const handleCheckNotification = () => {
     router.visit(route("transaction.index"));
@@ -169,14 +174,16 @@ const handleModalReport = (type) => {
                                                 currency: "PHP",
                                             }).format(
                                                 props.totalCollectibles *
-                                                    Number(props.activeStudents)
+                                                    Number(
+                                                        countOfActiveStudents.length
+                                                    )
                                             )
                                         }}
                                     </div>
                                     <div class="font-bold mt-5 mb-5">
                                         Total Collectibles of
                                         {{
-                                            page.props?.activeSchoolYear[0]
+                                            page.props?.currentSchoolYear[0]
                                                 ?.name
                                         }}
                                     </div>
@@ -225,7 +232,7 @@ const handleModalReport = (type) => {
                                     <div class="font-bold mt-5">
                                         Amounts Received of
                                         {{
-                                            page.props?.activeSchoolYear[0]
+                                            page.props?.currentSchoolYear[0]
                                                 ?.name
                                         }}
                                     </div>
@@ -275,7 +282,7 @@ const handleModalReport = (type) => {
                                     <div class="font-bold mt-5 mb-5">
                                         Remaining Collectibles of
                                         {{
-                                            page.props?.activeSchoolYear[0]
+                                            page.props?.currentSchoolYear[0]
                                                 ?.name
                                         }}
                                     </div>
@@ -312,7 +319,7 @@ const handleModalReport = (type) => {
                                         />
                                     </div>
                                     <div class="font-bold">
-                                        {{ props.activeStudents }}
+                                        {{ countOfActiveStudents.length }}
                                     </div>
                                     <div class="font-bold mt-5">
                                         Total Enrolled Students

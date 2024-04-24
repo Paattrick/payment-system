@@ -41,17 +41,17 @@ class DashboardController extends Controller
                 ->latest()
                 ->paginate($request->per_page);
     
-            $activeStudents = User::query()
-                ->where('status', 'active')
-                ->count();
-    
             $archivedStudents = User::query()
                 ->where('status', 'archived')
                 ->count();
 
             $activeSchoolYear = SchoolYear::query()
-                ->where('current_school_year', 1)
+                ->where('status', 'active')
                 ->first();
+
+            $activeStudents = User::query()
+                ->where('status', 'active')
+                ->get();
             
             $totalCollected = 0;
             $total = 0;
