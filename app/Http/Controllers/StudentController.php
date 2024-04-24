@@ -122,7 +122,9 @@ class StudentController extends Controller
                 'status' => 'active',
                 'active_school_year_id' => $request->school_year_id,
                 'student_fees' => $validated['student_fees'],
-                'enrolled_school_years' => [$request->current_school_year . '']
+                'enrolled_school_years' => [$request->current_school_year . ''],
+                'enrolled_grades' => [$validated['section'] . ''],
+                'enrolled_sections' => [$validated['grade'] . ''],
             ]
         )->assignRole('student');
 
@@ -135,17 +137,26 @@ class StudentController extends Controller
     public function update(Request $request, User $student)
     {
         $validated = $this->validateRequest($request);
-
+        
         $student->update($validated);
 
-        return redirect()->back();
-    }
+        $grade = $student->enrolled_grades;
+        if(!in_array($request->grade, $grade)) {
+            array_push($grade, $request->grade);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Request $request, User $student)
-    {
+        $section = $student->enrolled_sections;
+        if(!in_array($request->section, $section)) {
+            array_push($section, $request->section);
+        }
+        
+        $student->update([
+            'grade_id' => $validated['grade'],
+            'enrolled_grades' => $grade,
+            'enrolled_sections' => $section,
+        ]);
+
+        return redirect()->back();
     }
 
     public function archive(Request $request, User $student)

@@ -347,7 +347,8 @@ const handleCancel = () => {
 };
 
 const handleEdit = (val) => {
-    const data = null;
+    console.log(val);
+    let data = null;
     if (val.birthday !== null) {
         data = dayjs(val.birthday, "YYYY/MM/DD");
     }
@@ -356,6 +357,13 @@ const handleEdit = (val) => {
     });
     form.birthday = data;
     form.password = null;
+    if (val.address == "") {
+        form.address = {
+            province: null,
+            municipality: null,
+            barangay: null,
+        };
+    }
     showModal.value = true;
     isEditing.value = true;
 
@@ -729,7 +737,6 @@ const importCsv = () => {
                                     @change="calculateAge"
                                     class="w-full"
                                 />
-                                {{ form.birthday }}
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.birthday"

@@ -35,7 +35,9 @@ class User extends Authenticatable
         'status',
         'student_fees',
         'active_school_year_id',
-        'enrolled_school_years'
+        'enrolled_school_years',
+        'enrolled_grades',
+        'enrolled_sections'
     ];
 
     /**
@@ -58,7 +60,9 @@ class User extends Authenticatable
         'student_fees' => 'json',
         'address' => 'array',
         'password' => 'hashed',
-        'enrolled_school_years' => 'array'
+        'enrolled_school_years' => 'array',
+        'enrolled_grades' => 'array',
+        'enrolled_sections' => 'array'
     ];
 
     public function fee()
