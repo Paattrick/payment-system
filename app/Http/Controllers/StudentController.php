@@ -11,6 +11,9 @@ use Illuminate\Validation\Rule;
 use App\Models\Fee;
 use App\Models\Grade;
 use App\Http\Resources\FeeResource;
+use Illuminate\Support\Facades\Redis;
+use League\Csv\Reader;
+use League\Csv\Writer;
 
 class StudentController extends Controller
 {
@@ -190,6 +193,37 @@ class StudentController extends Controller
                 'enrolled_school_years' => $student
             ]);
         }
+        return redirect()->back();
+    }
+
+    public function importCsv(Request $request)
+    {
+        $csv = Reader::createFromPath($request->file->getRealPath());
+        $csv->setHeaderOffset(0);
+
+        foreach($csv as $record)
+        {
+            User::create(
+                [
+                    'name' => $record['name'],
+                    'middle_name' => $record['middle_name'],
+                    'last_name' => $record['last_name'],
+                    'suffix_name' => $record['suffix_name'],
+                    'lrn' => $record['lrn'],
+                    'birthday' => $record['birthday'],
+                    'contact_number' => $record['contact_number'],
+                    'gender' => $record['gender'],
+                    
+                    'address' => $record['address'],
+                    'password' => Hash::make($record['lrn']),
+                    'email' => $record['lrn'] . '@gnhs.edu.ph',
+                    'status' => 'active',
+                    'active_school_year_id' => intval($request->school_year_id),
+                    'enrolled_school_years' => [$request->current_school_year . '']
+                ]
+            )->assignRole('student');
+        }
+
         return redirect()->back();
     }
 }

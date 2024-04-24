@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/students/{student}/archive-restore', [StudentController::class, 'archiveRestore'])->name('student.archive-restore');
         Route::put('/enroll-students', [StudentController::class, 'enrollStudents'])->name('students.enroll');
         
+        Route::post('/students/import-csv', [StudentController::class, 'importCsv'])->name('import.csv');
     });
 
 

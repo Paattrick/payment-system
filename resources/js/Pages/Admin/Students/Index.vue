@@ -63,6 +63,7 @@ onMounted(() => {
 });
 
 const setTable = () => {
+    dataTable.value = [];
     props.students.data.map((e) => {
         if (
             e.enrolled_school_years.includes(
@@ -363,7 +364,6 @@ const submit = () => {
         preserveState: true,
         onSuccess: () => {
             showModal.value = false;
-            dataTable.value = null;
             setTable();
         },
     });
@@ -375,7 +375,6 @@ const update = () => {
         preserveState: true,
         onSuccess: () => {
             showModal.value = false;
-            dataTable.value = null;
             setTable();
         },
     });
@@ -414,6 +413,9 @@ const refresh = () => {
         },
         onFinish: () => {
             loading.value = false;
+        },
+        onSuccess: () => {
+            setTable();
         },
     });
 };
@@ -486,6 +488,28 @@ const enrollStudents = () => {
             },
         }
     );
+};
+
+const csvForm = useForm({
+    file: null,
+    school_year_id: page.props?.currentSchoolYear[0]?.id,
+    current_school_year: page.props?.activeSchoolYear[0]?.id,
+});
+
+const showImportCsvModal = ref(false);
+
+const handleImportCsv = () => {
+    showImportCsvModal.value = true;
+};
+
+const importCsv = () => {
+    csvForm.post(route("import.csv"), {
+        onSuccess: () => {
+            showImportCsvModal.value = false;
+            csvForm.reset();
+            setTable();
+        },
+    });
 };
 </script>
 <template>
@@ -579,6 +603,12 @@ const enrollStudents = () => {
                                         </template>
                                     </a-dropdown>
                                 </div>
+                                <a-button
+                                    type="default"
+                                    @click="handleImportCsv"
+                                >
+                                    Import CSV
+                                </a-button>
                                 <a-button type="primary" @click="handleAdd">
                                     Add Student
                                 </a-button>
@@ -1002,6 +1032,39 @@ const enrollStudents = () => {
                         </template>
                     </template>
                 </TableComponent>
+            </a-modal>
+            <a-modal
+                v-model:open="showImportCsvModal"
+                :footer="null"
+                title="Import CSV"
+            >
+                <a-form layout="vertical" enctype="multipart/form-data">
+                    <div class="flex pl-0">
+                        <div>
+                            <a-form-item label="Upload CSV">
+                                <a-input
+                                    type="file"
+                                    @input="
+                                        csvForm.file = $event.target.files[0]
+                                    "
+                                />
+                                <!-- <InputError
+                                    class="mt-2"
+                                    :message="page.props?.errors?.file"
+                                /> -->
+                            </a-form-item>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-5">
+                        <a-button
+                            @click="importCsv()"
+                            type="primary"
+                            :loading="csvForm.processing"
+                        >
+                            Import
+                        </a-button>
+                    </div>
+                </a-form>
             </a-modal>
         </div>
     </AuthenticatedLayout>
