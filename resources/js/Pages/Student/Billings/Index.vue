@@ -614,10 +614,10 @@ const getAdmissions = () => {
                     >
                         <div class="flex pl-0">
                             <div>
-                                <!-- <img
+                                <img
                                     class="w-[200px] h-[200px]"
                                     src="../../../../../public/build/assets/QR.jpg"
-                                /> -->
+                                />
                             </div>
                             <div>
                                 <a-form-item label="Upload Screenshot">
