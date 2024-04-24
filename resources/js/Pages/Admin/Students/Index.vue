@@ -14,10 +14,17 @@ import dayjs from "dayjs";
 import { composables } from "@/Composables/index.js";
 import { Modal, notification, message } from "ant-design-vue";
 import { watchDebounced } from "@vueuse/core";
-import { onMounted, watch } from "vue";
+import { onMounted, watch, computed } from "vue";
 import moment from "moment";
 import "moment/dist/locale/zh-cn";
 const [modal] = Modal.useModal();
+import {
+    regions,
+    provinces,
+    cities,
+    barangays,
+    provinceByName,
+} from "select-philippines-address";
 
 const props = defineProps({
     students: Object,
@@ -25,7 +32,7 @@ const props = defineProps({
     grades: Object,
 });
 
-const { sections, grades, strands } = composables();
+const { sections, grades, strands, phillipineProvinces } = composables();
 
 const page = usePage();
 
@@ -60,6 +67,7 @@ const dataTable = ref([]);
 const fees = ref([]);
 
 onMounted(() => {
+    provinces("01").then((province) => console.log(province));
     setTable();
 });
 
@@ -440,10 +448,6 @@ const refresh = () => {
 const studentFees = ref(null);
 const showStudentFeesModal = ref(false);
 
-const handleChangeMunicipality = (val) => {
-    form.municipality = val;
-};
-
 const showStudentFees = (val) => {
     if (val.student_fees !== null) {
         val?.student_fees.map((e) => {
@@ -532,6 +536,25 @@ const importCsv = () => {
             csvForm.reset();
             setTable();
         },
+    });
+};
+
+const municipalities = ref([]);
+const municipalityBarangays = ref([]);
+
+const handleChangeProvince = () => {
+    provinceByName(form.address.province).then(async (province) => {
+        await cities(province.province_code).then((city) => {
+            console.log(city);
+            municipalities.value = [...city];
+        });
+    });
+};
+
+const handleChangeMunicipality = () => {
+    barangays(form.address.municipality).then((barangays) => {
+        console.log(barangays);
+        municipalityBarangays.value = [...barangays];
     });
 };
 </script>
@@ -648,6 +671,9 @@ const importCsv = () => {
                             >
                                 {{ slotProps.record.last_name }}
                             </div>
+                        </template>
+                        <template v-if="slotProps.column.dataIndex === 'grade'">
+                            {{ slotProps.record.grade_id }}
                         </template>
                         <template
                             v-if="slotProps.column.dataIndex === 'actions'"
@@ -848,11 +874,9 @@ const importCsv = () => {
                                 <a-select
                                     v-model:value="form.address.province"
                                     style="width: 200px"
+                                    :options="phillipineProvinces()"
+                                    @change="handleChangeProvince"
                                 >
-                                    <a-select-option value="Bohol"
-                                        >Bohol</a-select-option
-                                    >
-                                    <!-- Add other provinces as needed -->
                                 </a-select>
                                 <InputError
                                     class="mt-2"
@@ -863,13 +887,15 @@ const importCsv = () => {
                                 <a-select
                                     v-model:value="form.address.municipality"
                                     style="width: 200px"
-                                    @change="handleChangeMunicipality"
                                     allowClear
+                                    :options="
+                                        municipalities.map((item) => ({
+                                            value: item.city_code,
+                                            label: item.city_name,
+                                        }))
+                                    "
+                                    @change="handleChangeMunicipality"
                                 >
-                                    <a-select-option value="Guindulman"
-                                        >Guindulman</a-select-option
-                                    >
-                                    <!-- Add other municipalities in Bohol -->
                                 </a-select>
                                 <InputError
                                     class="mt-2"
@@ -883,63 +909,13 @@ const importCsv = () => {
                                     v-model:value="form.address.barangay"
                                     style="width: 200px"
                                     allowClear
+                                    :options="
+                                        municipalityBarangays.map((item) => ({
+                                            value: item.brgy_name,
+                                            label: item.brgy_name,
+                                        }))
+                                    "
                                 >
-                                    <a-select-option value="Basdio"
-                                        >Basdio</a-select-option
-                                    >
-                                    <a-select-option value="Bato"
-                                        >Bato</a-select-option
-                                    >
-                                    <a-select-option value="Bayong"
-                                        >Bayong</a-select-option
-                                    >
-                                    <a-select-option value="Biabas"
-                                        >Biabas</a-select-option
-                                    >
-                                    <a-select-option value="Bulawan"
-                                        >Bulawan</a-select-option
-                                    >
-                                    <a-select-option value="Cabantian"
-                                        >Cabantian</a-select-option
-                                    >
-                                    <a-select-option value="Canhaway"
-                                        >Canhaway</a-select-option
-                                    >
-                                    <a-select-option value="Cansiwang"
-                                        >Cansiwang</a-select-option
-                                    >
-                                    <a-select-option value="Catungawan Norte"
-                                        >Catungawan Norte</a-select-option
-                                    >
-                                    <a-select-option value="Catungawan Sur"
-                                        >Catungawan Sur</a-select-option
-                                    >
-                                    <a-select-option value="Guinacot"
-                                        >Guinacot</a-select-option
-                                    >
-                                    <a-select-option value="Guio‑ang"
-                                        >Guio‑ang</a-select-option
-                                    >
-                                    <a-select-option value="Lombog"
-                                        >Lombog</a-select-option
-                                    >
-                                    <a-select-option value="Mayuga"
-                                        >Mayuga</a-select-option
-                                    >
-                                    <a-select-option value="Sawang "
-                                        >Sawang
-                                    </a-select-option>
-                                    <a-select-option value="Tabajan "
-                                        >Tabajan
-                                    </a-select-option>
-                                    <a-select-option value="Tabunok"
-                                        >Tabunok</a-select-option
-                                    >
-                                    <a-select-option value="Trinidad"
-                                        >Trinidad</a-select-option
-                                    >
-
-                                    <!-- Add other barangays in Guindulman -->
                                 </a-select>
                                 <InputError
                                     class="mt-2"
