@@ -47,6 +47,19 @@ const transactionId = ref(null);
 const showReceipt = ref(false);
 const showDeclineModal = ref(false);
 const note = ref(null);
+const dataTable = ref([]);
+
+onMounted(() => {
+    setTable();
+});
+
+const setTable = () => {
+    props.transactions.data.map((e) => {
+        if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+            dataTable.value.push(e);
+        }
+    });
+};
 
 const submit = () => {
     meta.value.map((e) => {
@@ -167,7 +180,7 @@ const submitDecline = () => {
 
             <div>
                 <TableComponent
-                    :dataSource="props.transactions.data"
+                    :dataSource="dataTable"
                     :columns="columns"
                     :isLoading="loading"
                     :paginationData="props.transactions.meta"

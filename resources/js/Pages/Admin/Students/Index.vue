@@ -347,7 +347,6 @@ const handleCancel = () => {
 };
 
 const handleEdit = (val) => {
-    console.log(val);
     let data = null;
     if (val.birthday !== null) {
         data = dayjs(val.birthday, "YYYY/MM/DD");
@@ -357,6 +356,12 @@ const handleEdit = (val) => {
     });
     form.birthday = data;
     form.password = null;
+    props.grades.map((e) => {
+        if (e.id == val.grade_id) {
+            form.grade = e.grade;
+        }
+    });
+
     if (val.address == "") {
         form.address = {
             province: null,

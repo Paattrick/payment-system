@@ -9,7 +9,7 @@ import { MoreOutlined } from "@ant-design/icons-vue";
 
 const props = defineProps({
     students: Object,
-    activeStudents: Number,
+    activeStudents: Array,
     archivedStudents: Number,
     history: Object,
     totalCollectibles: Number,
@@ -62,7 +62,6 @@ const columns = ref([
 ]);
 
 onMounted(() => {
-    console.log(props);
     props.activeStudents.map((e) => {
         if (
             e.enrolled_school_years.includes(
@@ -274,8 +273,13 @@ const handleModalReport = (type) => {
                                                 style: "currency",
                                                 currency: "PHP",
                                             }).format(
-                                                props.totalCollectibles -
-                                                    props.collectedCollectibles
+                                                props.totalCollectibles *
+                                                    Number(
+                                                        countOfActiveStudents.length
+                                                    ) -
+                                                    Number(
+                                                        props.collectedCollectibles
+                                                    )
                                             )
                                         }}
                                     </div>
