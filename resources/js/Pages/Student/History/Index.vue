@@ -1,37 +1,22 @@
 <script setup>
-import InputError from "@/Components/InputError.vue";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import {
-    DeleteFilled,
-    EditFilled,
-    ExclamationCircleFilled,
-    RestFilled,
-} from "@ant-design/icons-vue";
-import { useForm, router } from "@inertiajs/vue3";
-import { Modal, message } from "ant-design-vue";
-import { h, ref } from "vue";
 import TableComponent from "@/Components/Table.vue";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { router, usePage } from "@inertiajs/vue3";
+import { Modal } from "ant-design-vue";
 import "dayjs/locale/en";
-import dayjs from "dayjs";
 import moment from "moment";
 import "moment/dist/locale/zh-cn";
+import { ref, onMounted } from "vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
     histories: Object,
 });
 
-const form = useForm({
-    name: null,
-    meta: [],
-});
-
-const clearance = ref("");
-const amount = ref(0);
-const toPay = ref(0);
-const balance = ref(0);
+const page = usePage();
 const note = ref(null);
 const showNoteModal = ref(false);
+const dataTable = ref([]);
 
 const columns = ref([
     {
@@ -82,75 +67,17 @@ const descriptionColumns = ref([
     },
 ]);
 
-const showModal = ref(false);
-const isEditing = ref(false);
 const loading = ref(false);
 
-const handleAdd = () => {
-    showModal.value = true;
-    isEditing.value = false;
-};
+onMounted(() => {
+    setTable();
+});
 
-const handleCancel = () => {
-    form.reset();
-    form.errors = {};
-    showModal.value = false;
-};
-
-const addField = () => {
-    form.meta.push({
-        clearance: clearance.value,
-        amount: amount.value,
-        toPay: toPay.value,
-        balance: balance.value,
-    });
-    clearance.value = null;
-    amount.value = 0;
-};
-
-const removeField = (index) => {
-    form.meta.splice(index, 1);
-};
-
-const handleEdit = (val) => {
-    Object.entries(val).forEach(([key, value]) => {
-        form[key] = value;
-    });
-
-    showModal.value = true;
-    isEditing.value = true;
-};
-
-const submit = () => {
-    form.post(route("fees.store"), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            showModal.value = false;
-        },
-    });
-};
-
-const update = () => {
-    form.put(route("fees.update", form.id), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            showModal.value = false;
-        },
-    });
-};
-
-const handleDelete = (val) => {
-    Modal.confirm({
-        title: "Are you sure to delete this Payment?",
-        icon: h(ExclamationCircleFilled),
-        okText: "OK",
-        onOk() {
-            router.delete(route("fees.destroy", val.id));
-            message.success("Successfully Deleted!");
-        },
-        cancelText: "Cancel",
+const setTable = () => {
+    props.histories.data.map((e) => {
+        if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+            dataTable.value.push(e);
+        }
     });
 };
 
@@ -168,13 +95,6 @@ const refresh = () => {
 const viewNote = (val) => {
     note.value = val.note;
     showNoteModal.value = true;
-};
-
-const formatDate = (date, localTimeZone = false, format = null) => {
-    if (localTimeZone) {
-        return dayjs.format(format ? format : "M/D/YY [at] h:mm A z");
-    }
-    return dayjs(date).format("MMM DD YYYY h:mm A");
 };
 
 const handleChange = (event) => {
@@ -200,7 +120,7 @@ const handleChange = (event) => {
 
             <div>
                 <TableComponent
-                    :dataSource="props.histories.data"
+                    :dataSource="dataTable"
                     :columns="columns"
                     :isLoading="loading"
                     @change="handleChange"

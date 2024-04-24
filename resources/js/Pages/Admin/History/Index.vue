@@ -3,11 +3,11 @@ import InputError from "@/Components/InputError.vue";
 import TableComponent from "@/Components/Table.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { DeleteFilled, ExclamationCircleFilled } from "@ant-design/icons-vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import { Modal, message } from "ant-design-vue";
 import moment from "moment";
 import "moment/dist/locale/zh-cn";
-import { h, ref } from "vue";
+import { h, ref, onMounted } from "vue";
 const [modal] = Modal.useModal();
 
 const props = defineProps({
@@ -19,6 +19,7 @@ const form = useForm({
     meta: [],
 });
 
+const page = usePage();
 const clearance = ref("");
 const amount = ref(0);
 const toPay = ref(0);
@@ -76,6 +77,19 @@ const descriptionColumns = ref([
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
+const dataTable = ref([]);
+
+onMounted(() => {
+    setTable();
+});
+
+const setTable = () => {
+    props.histories.data.map((e) => {
+        if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+            dataTable.value.push(e);
+        }
+    });
+};
 
 const handleAdd = () => {
     showModal.value = true;
@@ -179,7 +193,7 @@ const handleChange = (event) => {
 
             <div>
                 <TableComponent
-                    :dataSource="props.histories.data"
+                    :dataSource="dataTable"
                     :columns="columns"
                     :isLoading="loading"
                     :paginationData="props.histories.meta"

@@ -57,6 +57,7 @@ const grade = ref(null);
 const section = ref(null);
 const testSections = ref([]);
 const dataTable = ref([]);
+const fees = ref([]);
 
 onMounted(() => {
     setTable();
@@ -74,6 +75,7 @@ const setTable = () => {
         }
     });
 };
+
 watchDebounced(
     [search, grade, section],
     (data) => {
@@ -345,13 +347,15 @@ const handleCancel = () => {
 };
 
 const handleEdit = (val) => {
-    const data = dayjs(val.birthday, "YYYY/MM/DD");
+    const data = null;
+    if (val.birthday !== null) {
+        data = dayjs(val.birthday, "YYYY/MM/DD");
+    }
     Object.entries(val).forEach(([key, value]) => {
         form[key] = value;
     });
-    form.password = null;
     form.birthday = data;
-
+    form.password = null;
     showModal.value = true;
     isEditing.value = true;
 
@@ -428,13 +432,15 @@ const handleChangeMunicipality = (val) => {
 };
 
 const showStudentFees = (val) => {
-    val.student_fees.map((e) => {
-        if (e.school_year_id == page.props.currentSchoolYear[0].id) {
-            studentFees.value = [...val.student_fees];
-        } else {
-            studentFees.value = null;
-        }
-    });
+    if (val.student_fees !== null) {
+        val?.student_fees.map((e) => {
+            if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+                studentFees.value = [...val.student_fees];
+            } else {
+                studentFees.value = null;
+            }
+        });
+    }
     showStudentFeesModal.value = true;
 
     remainingBalance();
@@ -444,14 +450,16 @@ const runningBalance = ref(null);
 
 const remainingBalance = () => {
     let temp = 0;
-    studentFees.value.map((e) => {
-        e.meta.map((meta) => {
-            if (meta.balance != "PAID") {
-                let toAdd = meta.balance == 0 ? meta.amount : meta.balance;
-                temp = Number(temp) + Number(toAdd);
-            }
+    if (studentFees.value !== null) {
+        studentFees.value.map((e) => {
+            e.meta.map((meta) => {
+                if (meta.balance != "PAID") {
+                    let toAdd = meta.balance == 0 ? meta.amount : meta.balance;
+                    temp = Number(temp) + Number(toAdd);
+                }
+            });
         });
-    });
+    }
 
     runningBalance.value = temp;
 };
@@ -459,15 +467,17 @@ const remainingBalance = () => {
 const age = ref(null);
 
 const calculateAge = () => {
-    const currentDate = new Date();
+    if (form.birthday !== null) {
+        const currentDate = new Date();
 
-    const diffTime = currentDate - new Date(form.birthday);
-    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    let years = Math.floor(totalDays / 365.25);
-    // let months = Math.floor((totalDays % 365.25) / 30.4375);
-    // let days = Math.floor((totalDays % 365.25) % 30.4375);
+        const diffTime = currentDate - new Date(form.birthday);
+        const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        let years = Math.floor(totalDays / 365.25);
+        // let months = Math.floor((totalDays % 365.25) / 30.4375);
+        // let days = Math.floor((totalDays % 365.25) % 30.4375);
 
-    age.value = years + " ";
+        age.value = years + " ";
+    }
 };
 
 const selectedStudents = ref([]);
@@ -719,6 +729,7 @@ const importCsv = () => {
                                     @change="calculateAge"
                                     class="w-full"
                                 />
+                                {{ form.birthday }}
                                 <InputError
                                     class="mt-2"
                                     :message="form.errors.birthday"

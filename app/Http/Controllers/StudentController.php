@@ -210,10 +210,8 @@ class StudentController extends Controller
                     'last_name' => $record['last_name'],
                     'suffix_name' => $record['suffix_name'],
                     'lrn' => $record['lrn'],
-                    'birthday' => $record['birthday'],
                     'contact_number' => $record['contact_number'],
                     'gender' => $record['gender'],
-                    
                     'address' => $record['address'],
                     'password' => Hash::make($record['lrn']),
                     'email' => $record['lrn'] . '@gnhs.edu.ph',

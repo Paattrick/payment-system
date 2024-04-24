@@ -32,10 +32,11 @@ class UserHistoryController extends Controller
 
     public function getFees(Request $request)
     {
+        
         $fees = Fee::query()
             ->where('school_year_id', $request->school_year_id)
             ->get();
-
+        
         return response(FeeResource::collection($fees));
     }
 }

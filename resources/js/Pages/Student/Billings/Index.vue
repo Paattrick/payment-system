@@ -85,8 +85,15 @@ const imageForm = useForm({
 const runningBalance = ref(null);
 
 const setTable = () => {
+    let tempData = [];
     if (page.props.auth.user?.student_fees != null) {
-        dataTable.value.meta = [...page.props.auth.user?.student_fees];
+        tempData = [...page.props.auth.user?.student_fees];
+
+        tempData.map((e) => {
+            if (e.school_year_id == page.props.currentSchoolYear[0].id) {
+                dataTable.value.meta.push(e);
+            }
+        });
     }
 
     // if (page.props.auth.user.student_fees.length == 0) {
@@ -345,7 +352,13 @@ const getAdmissions = () => {
                         <div class="flex justify-between">
                             <div class="flex space-x-4">
                                 <a-button @click="refresh()">Refresh</a-button>
-                                <div v-if="!page.props.auth.user?.student_fees">
+                                <div
+                                    v-if="
+                                        !page.props.auth.user?.student_fees ||
+                                        page.props.auth.user?.student_fees
+                                            .length == 0
+                                    "
+                                >
                                     <a-button
                                         type="primary"
                                         @click="getAdmissions()"

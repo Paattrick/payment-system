@@ -4,7 +4,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { EditFilled, ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import { Modal } from "ant-design-vue";
-import { createVNode, ref } from "vue";
+import { createVNode, ref, onMounted } from "vue";
 
 const props = defineProps({
     transactions: Object,
