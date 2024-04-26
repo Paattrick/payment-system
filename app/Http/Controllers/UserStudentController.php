@@ -30,11 +30,14 @@ class UserStudentController extends Controller
 
     public function submitFees(Request $request, User $student)
     {
-        $validateFile = $request->validate([
-            'reference' => 'required|unique:histories,reference'
-        ]);
+       
         
         if($request->hasFile('image')) {
+            $validateFile = $request->validate([
+                'reference' => 'required|unique:histories,reference',
+                'image' => 'required'
+            ]);
+
             $file = $request->file('image');
             $fileName = $file->getClientOriginalName();
             $path = 'public/images/' . $fileName;
@@ -57,6 +60,9 @@ class UserStudentController extends Controller
         }
 
         if($request->type == "cash") {
+            $validateFile = $request->validate([
+                'reference' => 'required|unique:histories,reference',
+            ]);
             $history = History::create([
                 'student_id' => $student->id,
                 'name' => $student->name,

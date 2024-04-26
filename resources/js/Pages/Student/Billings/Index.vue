@@ -582,7 +582,7 @@ const getAdmissions = () => {
                                 Gcash
                             </a-select-option>
                             <a-select-option value="cash">
-                                Cash on Hand
+                                Over the counter
                             </a-select-option>
                         </a-select>
                     </div>

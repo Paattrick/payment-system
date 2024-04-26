@@ -92,7 +92,11 @@ const handleCancel = () => {
                                 'current_school_year'
                             "
                         >
-                            {{ slotProps.record.current_school_year }}
+                            {{
+                                slotProps.record.current_school_year == true
+                                    ? "Active"
+                                    : "Inactive"
+                            }}
                         </template>
                         <template
                             v-if="slotProps.column.dataIndex === 'actions'"

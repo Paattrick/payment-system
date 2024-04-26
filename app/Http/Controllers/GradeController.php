@@ -15,7 +15,7 @@ class GradeController extends Controller
     {
         $grades = Grade::query()
             ->whereNotNull('grade')
-            ->orderBy('grade')
+            ->orderBy('grade', 'DESC')
             ->get();
        
         return Inertia::render('Admin/Grades/Index', [

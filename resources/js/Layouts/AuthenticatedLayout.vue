@@ -149,8 +149,9 @@ const focus = () => {
 
                     <a-badge
                         v-if="
-                            page.props.auth.role.is_admin ||
-                            page.props.auth.role.is_employee
+                            (page.props.auth.role.is_admin ||
+                                page.props.auth.role.is_employee) &&
+                            !collapsed
                         "
                         :count="page.props.notificationCount"
                     >
