@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Fee;
 use App\Models\History;
+use App\Models\Grade;
 use App\Models\SchoolYear;
 use App\Http\Resources\StudentResource;
 use Illuminate\Support\Facades\Auth;
@@ -88,6 +89,10 @@ class DashboardController extends Controller
                     }
                 }
             }
+            $grades = Grade::query()
+            ->whereNotNull('grade')
+            ->orderBy('grade')
+            ->get();
             
             return Inertia::render('Dashboard', [
                 'students' => $user,
@@ -95,7 +100,8 @@ class DashboardController extends Controller
                 'archivedStudents' => $archivedStudents,
                 'history' => $history,
                 'totalCollectibles' => $total,
-                'collectedCollectibles' => $totalCollected
+                'collectedCollectibles' => $totalCollected,
+                'grades' => $grades 
             ]);
         }
     }

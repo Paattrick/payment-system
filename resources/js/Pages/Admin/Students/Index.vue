@@ -69,6 +69,7 @@ const fees = ref([]);
 onMounted(() => {
     provinces("01").then((province) => console.log(province));
     setTable();
+    setGrades();
 });
 
 const setTable = () => {
@@ -555,6 +556,18 @@ const handleChangeMunicipality = () => {
     barangays(form.address.municipality).then((barangays) => {
         console.log(barangays);
         municipalityBarangays.value = [...barangays];
+    });
+};
+
+const tempGrades = ref([]);
+
+const setGrades = () => {
+    dataTable.value.map((e) => {
+        props.grades.map((grade) => {
+            if (e.grade_id == grade.id) {
+                e.grade_id = grade.grade;
+            }
+        });
     });
 };
 </script>

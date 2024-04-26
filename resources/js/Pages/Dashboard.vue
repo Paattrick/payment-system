@@ -14,6 +14,7 @@ const props = defineProps({
     history: Object,
     totalCollectibles: Number,
     collectedCollectibles: Number,
+    grades: Object,
 });
 const { sections, grades, strands } = composables();
 const page = usePage();
@@ -71,6 +72,7 @@ onMounted(() => {
             countOfActiveStudents.value.push(e);
         }
     });
+    setGrades();
 });
 
 const handleCheckNotification = () => {
@@ -111,6 +113,21 @@ const showReportModal = ref(false);
 const handleModalReport = (type) => {
     reportType.value = type;
     showReportModal.value = true;
+};
+
+const dataTable = ref([]);
+
+const setGrades = () => {
+    props.students.data.map((data) => {
+        dataTable.value.push(data);
+    });
+    dataTable.value.map((e) => {
+        props.grades.map((grade) => {
+            if (e.grade_id == grade.id) {
+                e.grade_id = grade.grade;
+            }
+        });
+    });
 };
 </script>
 
@@ -483,11 +500,19 @@ const handleModalReport = (type) => {
                             Recently added students
                         </div>
                         <TableComponent
-                            :dataSource="props.students.data"
+                            :dataSource="dataTable"
                             :columns="columns"
                             :paginationData="props.students.meta"
                         >
-                            <template #customColumn="slotProps"> </template>
+                            <template #customColumn="slotProps">
+                                <template
+                                    v-if="
+                                        slotProps.column.dataIndex === 'grade'
+                                    "
+                                >
+                                    {{ slotProps.record.grade_id }}
+                                </template>
+                            </template>
                         </TableComponent>
                     </div>
                 </div>
