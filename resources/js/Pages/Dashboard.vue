@@ -91,6 +91,8 @@ const exportLink = computed(() => {
             collectiblesType.value == "daily"
                 ? dayjs(collectiblesDate.value).format("YYYY/MM/DD")
                 : [firstDate.value, secondDate.value],
+        gradeSelected: gradeSelected.value,
+        sectionSelected: sectionSelected.value,
     });
 
     showReportModal.value = false;
@@ -127,6 +129,21 @@ const setGrades = () => {
                 e.grade_id = grade.grade;
             }
         });
+    });
+};
+
+const gradeSelected = ref(null);
+const sectionsSelected = ref([]);
+const sectionSelected = ref(null);
+
+const handleChangeGrade = () => {
+    sectionsSelected.value = [];
+    props.grades.map((e) => {
+        if (e.id == gradeSelected.value) {
+            e.sections.map((section) => {
+                sectionsSelected.value.push(section);
+            });
+        }
     });
 };
 </script>
@@ -363,13 +380,37 @@ const setGrades = () => {
                             v-if="reportType == 'generateTotalEnrolledStudents'"
                         >
                             <a-form layout="vertical">
+                                <a-form-item label="Select School Year">
+                                    <a-select
+                                        ref="select"
+                                        v-model:value="dateSelected"
+                                        @focus="focus"
+                                        @change="handleChangeDate"
+                                        class="w-full"
+                                    >
+                                        <a-select-option
+                                            v-for="(date, index) in page.props
+                                                .schoolYears"
+                                            :index="index"
+                                            :value="date.id"
+                                        >
+                                            {{ date.name }}
+                                        </a-select-option>
+                                    </a-select>
+                                </a-form-item>
                                 <a-form-item label="Select Grade">
                                     <a-select
                                         class="w-[200px]"
                                         placeholder="Select Grade"
-                                        v-model:value="grade"
+                                        v-model:value="gradeSelected"
+                                        @change="handleChangeGrade"
                                         allowClear
-                                        :options="grades()"
+                                        :options="
+                                            props.grades.map((item) => ({
+                                                value: item.id,
+                                                label: item.grade,
+                                            }))
+                                        "
                                         :filter-option="
                                             (input, option) =>
                                                 option.label
@@ -383,28 +424,20 @@ const setGrades = () => {
                                 </a-form-item>
                                 <a-form-item label="Select Section">
                                     <a-select
-                                        class="w-[200px]"
-                                        :placeholder="
-                                            Number(grade) > 10
-                                                ? 'Strand'
-                                                : 'Section'
-                                        "
-                                        v-model:value="section"
-                                        allowClear
-                                        :options="
-                                            Number(grade) > 10
-                                                ? strands()
-                                                : sections()
-                                        "
-                                        :filter-option="
-                                            (input, option) =>
-                                                option.label
-                                                    .toLowerCase()
-                                                    .indexOf(
-                                                        input.toLowerCase()
-                                                    ) >= 0
-                                        "
+                                        ref="select"
+                                        v-model:value="sectionSelected"
+                                        @focus="focus"
+                                        class="w-full"
                                     >
+                                        <a-select-option
+                                            v-for="(
+                                                date, index
+                                            ) in sectionsSelected"
+                                            :index="index"
+                                            :value="date"
+                                        >
+                                            {{ date }}
+                                        </a-select-option>
                                     </a-select>
                                 </a-form-item>
                                 <a-form-item label="Select Status">

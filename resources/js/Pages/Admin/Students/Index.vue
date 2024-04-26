@@ -67,7 +67,6 @@ const dataTable = ref([]);
 const fees = ref([]);
 
 onMounted(() => {
-    provinces("01").then((province) => console.log(province));
     setTable();
     setGrades();
 });
@@ -371,12 +370,15 @@ const handleEdit = (val) => {
         }
     });
 
-    if (val.address == "") {
+    if (val.address == "" || val.address == null) {
         form.address = {
             province: null,
             municipality: null,
             barangay: null,
         };
+    } else {
+        handleChangeProvince();
+        handleChangeMunicipality();
     }
     showModal.value = true;
     isEditing.value = true;
@@ -542,11 +544,11 @@ const importCsv = () => {
 
 const municipalities = ref([]);
 const municipalityBarangays = ref([]);
+const selectedMunicipalityByCode = ref(null);
 
 const handleChangeProvince = () => {
     provinceByName(form.address.province).then(async (province) => {
         await cities(province.province_code).then((city) => {
-            console.log(city);
             municipalities.value = [...city];
         });
     });
@@ -554,7 +556,6 @@ const handleChangeProvince = () => {
 
 const handleChangeMunicipality = () => {
     barangays(form.address.municipality).then((barangays) => {
-        console.log(barangays);
         municipalityBarangays.value = [...barangays];
     });
 };

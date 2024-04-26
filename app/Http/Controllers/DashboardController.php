@@ -108,24 +108,26 @@ class DashboardController extends Controller
 
     public function export($data, $type)
     {
-        // dd($data);
         if($type == 'generateTotalEnrolledStudents') {
 
             $csv = SimpleExcelWriter::streamDownload('students.csv');
     
-            foreach ($data as $file) {
+            foreach ($data[0] as $file) {
                 $row = [
                     'Name' => data_get($file, 'name'),
                     'ID Number' => data_get($file, 'id_number'),
                     'Grade' => data_get($file, 'grade'),
                     'Section' => data_get($file, 'section'),
                     'Status' => data_get($file, 'status'),
+                    
                 ];
     
                 // Arr::forget($row, $excludeColumn);
-    
                 $csv->addRow($row);
             }
+            $csv->addRow([
+                'Total Collectibles' => 'Total Collectibles: ' . $data[1]
+            ]);
         }
 
         if($type == 'generateTotalCollectibles') {
@@ -152,20 +154,35 @@ class DashboardController extends Controller
                 ->whereHas('roles', fn ($query) => $query->where('name', 'student'))
                 ->whereNotNull('name')
                 ->when($request->input('grade'), function ($query, $filter) use ($request) {
-                    $query->where('grade', $request->grade);
+                    $query->whereJsonContains('enrolled_grades', $request->grade);
                 })
                 ->when($request->input('section'), function ($query, $filter) use ($request) {
-                    $query->where('section', $request->section);
+                    $query->whereJsonContains('enrolled_sections', $request->section);
                 })
                 ->when($request->input('status'), function ($query, $filter) use ($request) {
                     $query->where('status', $request->status);
                 })
-                ->orderBy('grade')
-                ->get();
-
-            $studentsCollection = collect($students);
+                ->get()
+                ->toArray();
             
-            $this->export($studentsCollection, $request->type);
+            $studentsCollection = collect($students);
+            $total = 0;
+                
+            foreach($studentsCollection as $val) {
+                if($val['student_fees'] !== null) {
+                    foreach($val['student_fees'] as $meta) {
+                        foreach($meta['meta'] as $data) {
+                            if($data['totalPaid'] !== null) {
+                                $total = $total + floatval($data['totalPaid']);
+                            }
+                        }
+                    }
+                }
+            }
+
+            $data = [$studentsCollection, $total];
+            
+            $this->export($data, $request->type);
         }
 
         if($request->type == 'generateTotalCollectibles') {

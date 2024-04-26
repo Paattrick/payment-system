@@ -210,24 +210,26 @@ class StudentController extends Controller
     {
         $csv = Reader::createFromPath($request->file->getRealPath());
         $csv->setHeaderOffset(0);
-
+       
         foreach($csv as $record)
         {
             User::create(
                 [
-                    'name' => $record['name'],
-                    'middle_name' => $record['middle_name'],
-                    'last_name' => $record['last_name'],
-                    'suffix_name' => $record['suffix_name'],
-                    'lrn' => $record['lrn'],
-                    'contact_number' => $record['contact_number'],
-                    'gender' => $record['gender'],
-                    'address' => $record['address'],
+                    'name' => $record['name'] == "" ? null : $record['name'],
+                    'middle_name' => $record['middle_name'] == "" ? null : $record['middle_name'],
+                    'last_name' => $record['last_name'] == "" ? null : $record['last_name'],
+                    'suffix_name' => $record['suffix_name'] == "" ? null : $record['suffix_name'],
+                    'lrn' => $record['lrn'] == "" ? null : $record['lrn'],
+                    'contact_number' => $record['contact_number'] == "" ? null : $record['contact_number'],
+                    'gender' => $record['gender'] == "" ? null : $record['gender'],
+                    'address' => $record['address'] == "" ? null : $record['address'],
                     'password' => Hash::make($record['lrn']),
                     'email' => $record['lrn'] . '@gnhs.edu.ph',
                     'status' => 'active',
                     'active_school_year_id' => intval($request->school_year_id),
-                    'enrolled_school_years' => [$request->current_school_year . '']
+                    'enrolled_school_years' => [$request->current_school_year . ''],
+                    'enrolled_grades' => [],
+                    'enrolled_sections' => []
                 ]
             )->assignRole('student');
         }
