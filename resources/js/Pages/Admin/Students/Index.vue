@@ -82,6 +82,7 @@ const setTable = () => {
             dataTable.value.push(e);
         }
     });
+    setGrades();
 };
 
 watchDebounced(

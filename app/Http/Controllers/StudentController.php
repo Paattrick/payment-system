@@ -151,6 +151,7 @@ class StudentController extends Controller
         }
         
         $student->update([
+            'grade_id' => $request->grade,
             'enrolled_grades' => $grade,
             'enrolled_sections' => $section,
         ]);
